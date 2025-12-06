@@ -4,15 +4,42 @@
 
 Inspired by [FT_SCServo_Debug_Qt](https://github.com/Kotakku/FT_SCServo_Debug_Qt)
 
+## Screenshots
+
+### 🎮 Control Tab
+Position control with slider, quick presets, live status monitoring, and torque control.
+
+![Control](assets/Control.png)
+
+### ⚙️ Settings Tab
+Calibration, PID tuning, and protection settings.
+
+![Settings](assets/Settings.png)
+
+### ⚡ Motion Tab
+Motion profile parameters (Amax, Vmax, Vmin, DTs, Vk) and velocity PID.
+
+![Motion](assets/Motion.png)
+
+### 🔧 Debug Tab
+Full register table with 50+ registers, filterable by area (EPROM/SRAM/DEFAULT).
+
+![Debug](assets/Debug.png)
+
 ## Features
 
-- 🔍 **Servo Scanner** - Auto-detect all connected servos
-- 🎮 **Position Control** - Intuitive slider + quick presets  
-- 📈 **Real-time Monitoring** - Position, load, voltage, temperature
-- ⚙️ **Calibration** - Set min/max/center positions
-- 🔧 **Change Servo ID** - Modify servo ID (EEPROM)
+- 🔍 **Servo Scanner** - Auto-detect all connected servos (ID 1-253)
+- 🎮 **Position Control** - Intuitive slider + quick presets (0°, 90°, 180°, 270°, 360°)
+- 📈 **Real-time Monitoring** - Position, load, voltage, temperature via WebSocket
+- 🔧 **Change Servo ID** - Modify servo ID (stored in EEPROM)
 - 💪 **Torque Control** - Enable/disable servo torque
 - 🔄 **Range Test** - Automatic full range motion test
+- ⚙️ **Calibration** - Set min/max/center positions
+- 🎛️ **PID Tuning** - Position P/I/D gains, Velocity P/I gains
+- 🛡️ **Protection Settings** - Max/Min voltage, Max temperature limits
+- ⚡ **Motion Profile** - Amax, Vmax, Vmin, DTs, Vk parameters
+- 📋 **Debug Register Table** - View/edit all 50+ servo registers
+- 💾 **LocalStorage Cache** - Port settings persist across page reloads
 
 ## Quick Start
 
@@ -33,7 +60,7 @@ Then open http://localhost:8081 in your browser.
 
 ## Hardware
 
-- Feetech SCS/STS series servos (e.g., STS3215)
+- Feetech SCS/STS series servos (e.g., STS3215, SCS0009, etc.)
 - USB to TTL adapter (e.g., Waveshare Bus Servo Adapter)
 
 ## API Endpoints
@@ -45,18 +72,29 @@ Then open http://localhost:8081 in your browser.
 | `/api/scan` | POST | Scan for servos |
 | `/api/servos` | GET | List all servos |
 | `/api/servo/{id}/status` | GET | Get servo status |
+| `/api/servo/{id}/registers` | GET | Read all registers |
 | `/api/servo/position` | POST | Set position |
 | `/api/servo/torque` | POST | Set torque |
 | `/api/servo/change-id` | POST | Change servo ID |
-| `/ws` | WebSocket | Real-time updates |
+| `/api/servo/register` | POST | Write single register |
+| `/api/servo/motion-params` | POST | Set motion parameters |
+| `/ws` | WebSocket | Real-time status updates |
+
+## Register Areas
+
+| Area | Description | Persistence |
+|------|-------------|-------------|
+| **EPROM** | Configuration registers | Persistent (survives power cycle) |
+| **SRAM** | Runtime registers | Volatile (reset on power cycle) |
+| **DEFAULT** | Motion profile params | Persistent |
 
 ## TODO
 
-- [ ] EEPROM parameter editing (Amax, Vmax, Vmin, etc.)
-- [ ] Servo programming mode
-- [ ] Save/Load configurations
+- [ ] Save/Load servo configurations to file
 - [ ] Multi-servo group control
 - [ ] Trajectory recording & playback
+- [ ] Servo firmware upgrade
+- [ ] PWM mode support
 
 ## License
 

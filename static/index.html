@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Servo Test Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #131923;
+            --bg-tertiary: #1a2332;
+            --accent-cyan: #00f5d4;
+            --accent-magenta: #f72585;
+            --accent-yellow: #fee440;
+            --accent-orange: #ff6b35;
+            --text-primary: #e6e6e6;
+            --text-secondary: #8892a2;
+            --border-color: #2a3546;
+            --success: #00f5d4;
+            --danger: #f72585;
+            --warning: #fee440;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(ellipse at 20% 20%, rgba(0, 245, 212, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(247, 37, 133, 0.08) 0%, transparent 50%),
+                linear-gradient(180deg, var(--bg-primary) 0%, #0d1117 100%);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Connection Panel */
+        .connection-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .connection-panel h2 {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .connection-form {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), #00b4a0);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 245, 212, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-magenta), #c71f66);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(247, 37, 133, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+            box-shadow: 0 0 12px var(--success);
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .card h3 {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Servo List */
+        .servo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .servo-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .servo-item:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .servo-item.active {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 245, 212, 0.1);
+        }
+
+        .servo-item .id {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .servo-item .model {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .servo-item .status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .servo-item .status.offline {
+            background: var(--danger);
+        }
+
+        /* Scan Controls */
+        .scan-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .scan-controls input {
+            width: 60px;
+            padding: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .no-servo-selected {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .no-servo-selected .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Position Control */
+        .position-control {
+            padding: 24px;
+        }
+
+        .position-display {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .position-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 64px;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .position-unit {
+            font-size: 24px;
+            color: var(--text-secondary);
+        }
+
+        .slider-container {
+            position: relative;
+            margin: 32px 0;
+        }
+
+        .slider {
+            width: 100%;
+            height: 12px;
+            -webkit-appearance: none;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 245, 212, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .action-btn {
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .action-btn .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .action-btn .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Status Grid */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .status-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .status-card {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .status-card .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .status-card .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        .status-card.warning .value {
+            color: var(--warning);
+        }
+
+        .status-card.danger .value {
+            color: var(--danger);
+        }
+
+        /* Calibration Panel */
+        .calibration-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .calibration-input {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .calibration-input label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .calibration-input input {
+            padding: 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .toast {
+            padding: 16px 24px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--danger);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--bg-tertiary);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">🤖</div>
+                <div>
+                    <h1>Servo Dashboard</h1>
+                    <p>Feetech SCS/STS Servo Tester</p>
+                </div>
+            </div>
+            <div class="status-indicator" id="connectionStatus">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Disconnected</span>
+            </div>
+        </header>
+
+        <!-- Connection Panel -->
+        <div class="connection-panel">
+            <h2>🔌 Connection</h2>
+            <div class="connection-form">
+                <div class="form-group">
+                    <label>Serial Port</label>
+                    <input type="text" id="portInput" value="/dev/tty.usbmodem5A7C1167091">
+                </div>
+                <div class="form-group">
+                    <label>Baudrate</label>
+                    <input type="number" id="baudrateInput" value="1000000">
+                </div>
+                <button class="btn btn-primary" id="connectBtn" onclick="toggleConnection()">
+                    <span>Connect</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Scan Card -->
+                <div class="card">
+                    <h3>🔍 Servo Scanner</h3>
+                    <div class="scan-controls">
+                        <input type="number" id="scanStart" value="1" min="1" max="253">
+                        <span style="color: var(--text-secondary)">→</span>
+                        <input type="number" id="scanEnd" value="20" min="1" max="253">
+                        <button class="btn btn-secondary btn-sm" onclick="scanServos()">Scan</button>
+                    </div>
+                    <div class="servo-list" id="servoList">
+                        <div style="text-align: center; color: var(--text-secondary); padding: 40px 0;">
+                            Connect and scan to find servos
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Info -->
+                <div class="card">
+                    <h3>📊 Quick Stats</h3>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-secondary)">Servos Found</span>
+                            <span id="servoCount" style="font-family: 'JetBrains Mono', monospace;">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-secondary)">Connection</span>
+                            <span id="connStatus" style="font-family: 'JetBrains Mono', monospace; color: var(--danger);">Offline</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ID Changer -->
+                <div class="card">
+                    <h3>🔧 Change Servo ID</h3>
+                    <div style="background: rgba(254, 228, 64, 0.1); border: 1px solid var(--warning); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px; color: var(--warning); font-size: 12px;">
+                            <span>⚠️</span>
+                            <span>Chỉ kết nối 1 servo khi đổi ID!</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">OLD ID</label>
+                            <input type="number" id="oldIdInput" value="1" min="1" max="253" style="width: 100%; padding: 10px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; text-align: center;">
+                        </div>
+                        <div style="display: flex; align-items: flex-end; padding-bottom: 10px; color: var(--text-secondary);">→</div>
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">NEW ID</label>
+                            <input type="number" id="newIdInput" value="2" min="1" max="253" style="width: 100%; padding: 10px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; text-align: center;">
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" style="width: 100%;" onclick="changeServoId()">
+                        Change ID
+                    </button>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <!-- No Servo Selected State -->
+                <div class="card no-servo-selected" id="noServoPanel">
+                    <div class="icon">🎯</div>
+                    <h3>No Servo Selected</h3>
+                    <p style="margin-top: 8px;">Scan for servos and select one to control</p>
+                </div>
+
+                <!-- Servo Control Panel -->
+                <div id="servoControlPanel" class="hidden">
+                    <!-- Position Control -->
+                    <div class="card position-control">
+                        <h3>🎮 Position Control — Servo <span id="selectedServoId">1</span></h3>
+                        <div class="position-display">
+                            <span class="position-value" id="currentPosition">2048</span>
+                            <span class="position-unit">/ 4095</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" class="slider" id="positionSlider" min="0" max="4095" value="2048" oninput="updatePosition(this.value)">
+                            <div class="slider-labels">
+                                <span>0°</span>
+                                <span>90°</span>
+                                <span>180°</span>
+                                <span>270°</span>
+                                <span>360°</span>
+                            </div>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="action-btn" onclick="setQuickPosition(0)">
+                                <div class="icon">⬅️</div>
+                                <div class="label">Min (0)</div>
+                            </button>
+                            <button class="action-btn" onclick="setQuickPosition(1024)">
+                                <div class="icon">↙️</div>
+                                <div class="label">90° (1024)</div>
+                            </button>
+                            <button class="action-btn" onclick="centerServo()">
+                                <div class="icon">🎯</div>
+                                <div class="label">Center (2048)</div>
+                            </button>
+                            <button class="action-btn" onclick="setQuickPosition(3072)">
+                                <div class="icon">↗️</div>
+                                <div class="label">270° (3072)</div>
+                            </button>
+                            <button class="action-btn" onclick="setQuickPosition(4095)">
+                                <div class="icon">➡️</div>
+                                <div class="label">Max (4095)</div>
+                            </button>
+                            <button class="action-btn" onclick="testRange()">
+                                <div class="icon">🔄</div>
+                                <div class="label">Test Range</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Status Cards -->
+                    <div class="card">
+                        <h3>📈 Live Status</h3>
+                        <div class="status-grid">
+                            <div class="status-card">
+                                <div class="value" id="livePosition">—</div>
+                                <div class="label">Position</div>
+                            </div>
+                            <div class="status-card">
+                                <div class="value" id="liveLoad">—</div>
+                                <div class="label">Load %</div>
+                            </div>
+                            <div class="status-card">
+                                <div class="value" id="liveVoltage">—</div>
+                                <div class="label">Voltage</div>
+                            </div>
+                            <div class="status-card" id="tempCard">
+                                <div class="value" id="liveTemp">—</div>
+                                <div class="label">Temp °C</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calibration -->
+                    <div class="card">
+                        <h3>⚙️ Calibration</h3>
+                        <div class="calibration-grid">
+                            <div class="calibration-input">
+                                <label>Min Position</label>
+                                <input type="number" id="calibMin" value="0" min="0" max="4095">
+                            </div>
+                            <div class="calibration-input">
+                                <label>Center Position</label>
+                                <input type="number" id="calibCenter" value="2048" min="0" max="4095">
+                            </div>
+                            <div class="calibration-input">
+                                <label>Max Position</label>
+                                <input type="number" id="calibMax" value="4095" min="0" max="4095">
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px; display: flex; gap: 12px;">
+                            <button class="btn btn-secondary" onclick="readCurrentAsCenter()">Set Current as Center</button>
+                            <button class="btn btn-primary" onclick="saveCalibration()">Save Calibration</button>
+                        </div>
+                    </div>
+
+                    <!-- Torque Control -->
+                    <div class="card">
+                        <h3>💪 Torque Control</h3>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-primary" onclick="setTorque(true)">Enable Torque</button>
+                            <button class="btn btn-danger" onclick="setTorque(false)">Disable Torque</button>
+                            <button class="btn btn-secondary" onclick="pingServo()">Ping Servo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        let isConnected = false;
+        let selectedServoId = null;
+        let servos = [];
+        let ws = null;
+
+        // API Functions
+        async function api(endpoint, method = 'GET', body = null) {
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' }
+            };
+            if (body) options.body = JSON.stringify(body);
+            
+            const response = await fetch(`/api${endpoint}`, options);
+            return response.json();
+        }
+
+        // Connection
+        async function toggleConnection() {
+            const btn = document.getElementById('connectBtn');
+            
+            if (isConnected) {
+                await api('/disconnect', 'POST');
+                setConnected(false);
+                showToast('Disconnected', 'success');
+                if (ws) ws.close();
+            } else {
+                const port = document.getElementById('portInput').value;
+                const baudrate = parseInt(document.getElementById('baudrateInput').value);
+                
+                btn.innerHTML = '<div class="spinner"></div>';
+                const result = await api('/connect', 'POST', { port, baudrate });
+                
+                if (result.success) {
+                    setConnected(true);
+                    showToast('Connected successfully', 'success');
+                    connectWebSocket();
+                } else {
+                    showToast(result.message, 'error');
+                }
+            }
+            
+            btn.innerHTML = `<span>${isConnected ? 'Disconnect' : 'Connect'}</span>`;
+        }
+
+        function setConnected(connected) {
+            isConnected = connected;
+            document.getElementById('statusDot').classList.toggle('connected', connected);
+            document.getElementById('statusText').textContent = connected ? 'Connected' : 'Disconnected';
+            document.getElementById('connStatus').textContent = connected ? 'Online' : 'Offline';
+            document.getElementById('connStatus').style.color = connected ? 'var(--success)' : 'var(--danger)';
+            document.getElementById('connectBtn').classList.toggle('btn-danger', connected);
+            document.getElementById('connectBtn').classList.toggle('btn-primary', !connected);
+        }
+
+        // WebSocket
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'status_update' && selectedServoId) {
+                    const servo = data.servos.find(s => s.id === selectedServoId);
+                    if (servo) updateLiveStatus(servo);
+                }
+            };
+            
+            ws.onclose = () => {
+                if (isConnected) setTimeout(connectWebSocket, 1000);
+            };
+        }
+
+        // Scan Servos
+        async function scanServos() {
+            if (!isConnected) {
+                showToast('Please connect first', 'error');
+                return;
+            }
+            
+            const startId = parseInt(document.getElementById('scanStart').value);
+            const endId = parseInt(document.getElementById('scanEnd').value);
+            
+            showToast('Scanning...', 'success');
+            const result = await api('/scan', 'POST', { start_id: startId, end_id: endId });
+            
+            servos = result.servos || [];
+            document.getElementById('servoCount').textContent = servos.length;
+            renderServoList();
+            
+            showToast(`Found ${servos.length} servo(s)`, 'success');
+        }
+
+        function renderServoList() {
+            const list = document.getElementById('servoList');
+            
+            if (servos.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 40px 0;">No servos found</div>';
+                return;
+            }
+            
+            list.innerHTML = servos.map(servo => `
+                <div class="servo-item ${selectedServoId === servo.id ? 'active' : ''}" onclick="selectServo(${servo.id})">
+                    <div>
+                        <div class="id">ID: ${servo.id}</div>
+                        <div class="model">Model: ${servo.model_number}</div>
+                    </div>
+                    <div class="status"></div>
+                </div>
+            `).join('');
+        }
+
+        // Select Servo
+        function selectServo(id) {
+            selectedServoId = id;
+            document.getElementById('selectedServoId').textContent = id;
+            document.getElementById('noServoPanel').classList.add('hidden');
+            document.getElementById('servoControlPanel').classList.remove('hidden');
+            renderServoList();
+            
+            // Fetch initial status
+            refreshServoStatus();
+        }
+
+        async function refreshServoStatus() {
+            if (!selectedServoId) return;
+            const status = await api(`/servo/${selectedServoId}/status`);
+            updateLiveStatus(status);
+        }
+
+        function updateLiveStatus(status) {
+            document.getElementById('livePosition').textContent = status.position;
+            document.getElementById('liveLoad').textContent = Math.abs(status.load / 10).toFixed(1);
+            document.getElementById('liveVoltage').textContent = status.voltage.toFixed(1) + 'V';
+            document.getElementById('liveTemp').textContent = status.temperature;
+            
+            // Temperature warning
+            const tempCard = document.getElementById('tempCard');
+            tempCard.classList.remove('warning', 'danger');
+            if (status.temperature > 60) tempCard.classList.add('danger');
+            else if (status.temperature > 45) tempCard.classList.add('warning');
+        }
+
+        // Position Control
+        function updatePosition(value) {
+            document.getElementById('currentPosition').textContent = value;
+        }
+
+        async function setQuickPosition(position) {
+            if (!selectedServoId) return;
+            
+            document.getElementById('positionSlider').value = position;
+            document.getElementById('currentPosition').textContent = position;
+            
+            await api('/servo/position', 'POST', {
+                servo_id: selectedServoId,
+                position: position,
+                time_ms: 500
+            });
+        }
+
+        // Debounced slider update
+        let sliderTimeout;
+        document.getElementById('positionSlider').addEventListener('change', async (e) => {
+            clearTimeout(sliderTimeout);
+            sliderTimeout = setTimeout(async () => {
+                await api('/servo/position', 'POST', {
+                    servo_id: selectedServoId,
+                    position: parseInt(e.target.value),
+                    time_ms: 300
+                });
+            }, 50);
+        });
+
+        async function centerServo() {
+            if (!selectedServoId) return;
+            await api(`/servo/${selectedServoId}/center`, 'POST');
+            setQuickPosition(2048);
+            showToast('Centering servo...', 'success');
+        }
+
+        async function testRange() {
+            if (!selectedServoId) return;
+            
+            showToast('Testing range...', 'success');
+            await setQuickPosition(0);
+            await new Promise(r => setTimeout(r, 1500));
+            await setQuickPosition(4095);
+            await new Promise(r => setTimeout(r, 1500));
+            await setQuickPosition(2048);
+        }
+
+        // Torque
+        async function setTorque(enable) {
+            if (!selectedServoId) return;
+            const result = await api('/servo/torque', 'POST', {
+                servo_id: selectedServoId,
+                enable: enable
+            });
+            showToast(result.message, result.success ? 'success' : 'error');
+        }
+
+        async function pingServo() {
+            if (!selectedServoId) return;
+            const result = await api(`/servo/${selectedServoId}/ping`);
+            showToast(result.message, result.success ? 'success' : 'error');
+        }
+
+        // Calibration
+        function readCurrentAsCenter() {
+            const current = parseInt(document.getElementById('livePosition').textContent);
+            if (!isNaN(current)) {
+                document.getElementById('calibCenter').value = current;
+                showToast(`Center set to ${current}`, 'success');
+            }
+        }
+
+        async function saveCalibration() {
+            if (!selectedServoId) return;
+            
+            const result = await api('/servo/calibration', 'POST', {
+                servo_id: selectedServoId,
+                min_position: parseInt(document.getElementById('calibMin').value),
+                max_position: parseInt(document.getElementById('calibMax').value),
+                center_position: parseInt(document.getElementById('calibCenter').value)
+            });
+            
+            showToast('Calibration saved', 'success');
+        }
+
+        // Change Servo ID
+        async function changeServoId() {
+            if (!isConnected) {
+                showToast('Please connect first', 'error');
+                return;
+            }
+            
+            const oldId = parseInt(document.getElementById('oldIdInput').value);
+            const newId = parseInt(document.getElementById('newIdInput').value);
+            
+            if (oldId === newId) {
+                showToast('New ID must be different from old ID', 'error');
+                return;
+            }
+            
+            if (newId < 1 || newId > 253) {
+                showToast('ID must be between 1 and 253', 'error');
+                return;
+            }
+            
+            // Confirm action
+            if (!confirm(`⚠️ Change servo ID from ${oldId} to ${newId}?\n\nMake sure only ONE servo is connected!`)) {
+                return;
+            }
+            
+            showToast('Changing ID...', 'success');
+            
+            const result = await api('/servo/change-id', 'POST', {
+                old_id: oldId,
+                new_id: newId
+            });
+            
+            if (result.success) {
+                showToast(result.message, 'success');
+                // Update the old ID input to the new ID for convenience
+                document.getElementById('oldIdInput').value = newId;
+                document.getElementById('newIdInput').value = newId + 1;
+                // Rescan to update the list
+                await scanServos();
+            } else {
+                showToast(result.message, 'error');
+            }
+        }
+
+        // Toast Notifications
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${type === 'success' ? '✓' : '✕'}</span>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Check initial status
+        api('/status').then(status => {
+            if (status.connected) {
+                setConnected(true);
+                connectWebSocket();
+            }
+        });
+    </script>
+</body>
+</html>
+

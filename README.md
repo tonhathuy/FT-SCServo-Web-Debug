@@ -11,6 +11,11 @@ Position control with slider, quick presets, live status monitoring, and torque 
 
 ![Control](assets/Control.png)
 
+### 📊 Monitor Tab
+Real-time chart with Position, Speed, Load, Current, Temperature, Voltage. Auto Sweep for testing.
+
+![Monitor](assets/Monitor.png)
+
 ### ⚙️ Settings Tab
 Calibration, PID tuning, and protection settings.
 
@@ -30,10 +35,11 @@ Full register table with 50+ registers, filterable by area (EPROM/SRAM/DEFAULT).
 
 - 🔍 **Servo Scanner** - Auto-detect all connected servos (ID 1-253)
 - 🎮 **Position Control** - Intuitive slider + quick presets (0°, 90°, 180°, 270°, 360°)
-- 📈 **Real-time Monitoring** - Position, load, voltage, temperature via WebSocket
+- 📊 **Real-time Chart** - Live graph of Position, Speed, Load, Current, Temp, Voltage
+- 🔄 **Auto Sweep** - Automatic sweep between Start/End positions for testing
+- 📥 **Data Export** - Export recorded data to CSV file
 - 🔧 **Change Servo ID** - Modify servo ID (stored in EEPROM)
 - 💪 **Torque Control** - Enable/disable servo torque
-- 🔄 **Range Test** - Automatic full range motion test
 - ⚙️ **Calibration** - Set min/max/center positions
 - 🎛️ **PID Tuning** - Position P/I/D gains, Velocity P/I gains
 - 🛡️ **Protection Settings** - Max/Min voltage, Max temperature limits

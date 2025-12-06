@@ -336,6 +336,9 @@ class ServoInfo:
     load: int = 0
     voltage: float = 0.0
     temperature: int = 0
+    present_current: int = 0
+    moving_status: int = 0
+    goal_position: int = 0
     is_online: bool = True
     min_position: int = 0
     max_position: int = 4095
@@ -443,6 +446,15 @@ class ServoController:
                     pos = pos - 65536
                 servo.position = pos
             
+            # Read speed
+            speed, res, _ = self.packet_handler.read2ByteTxRx(
+                self.port_handler, servo_id, ADDR_SCS_PRESENT_SPEED
+            )
+            if res == COMM_SUCCESS:
+                if speed > 32767:
+                    speed = speed - 65536
+                servo.speed = speed
+            
             # Read load
             load, res, _ = self.packet_handler.read2ByteTxRx(
                 self.port_handler, servo_id, ADDR_SCS_PRESENT_LOAD
@@ -465,6 +477,27 @@ class ServoController:
             )
             if res == COMM_SUCCESS:
                 servo.temperature = temp
+            
+            # Read current
+            current, res, _ = self.packet_handler.read2ByteTxRx(
+                self.port_handler, servo_id, 69  # ADDR_SCS_PRESENT_CURRENT
+            )
+            if res == COMM_SUCCESS:
+                servo.present_current = current
+            
+            # Read moving status
+            moving, res, _ = self.packet_handler.read1ByteTxRx(
+                self.port_handler, servo_id, 66  # ADDR_SCS_MOVING_STATUS
+            )
+            if res == COMM_SUCCESS:
+                servo.moving_status = moving
+            
+            # Read goal position
+            goal, res, _ = self.packet_handler.read2ByteTxRx(
+                self.port_handler, servo_id, ADDR_SCS_GOAL_POSITION
+            )
+            if res == COMM_SUCCESS:
+                servo.goal_position = goal
         
         return asdict(servo)
     

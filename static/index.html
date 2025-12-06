@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🤖 Servo Test Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-primary: #0a0e14;
@@ -652,6 +653,222 @@
             }
         }
 
+        /* Chart Toggles */
+        .chart-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .chart-toggle input {
+            display: none;
+        }
+
+        .chart-toggle .toggle-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+        }
+
+        .chart-toggle input:checked + .toggle-color {
+            opacity: 1;
+        }
+
+        .chart-toggle:hover {
+            color: var(--text-primary);
+        }
+
+        /* Feedback Grid */
+        .feedback-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .feedback-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .feedback-item {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .feedback-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .feedback-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* Monitor Tab Layout */
+        .monitor-layout {
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 16px;
+            height: calc(100vh - 380px);
+            min-height: 450px;
+        }
+
+        @media (max-width: 1024px) {
+            .monitor-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+
+        .monitor-chart-area {
+            min-height: 400px;
+        }
+
+        .monitor-chart-area .card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .monitor-header h3 {
+            font-size: 16px;
+        }
+
+        .monitor-controls {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .chart-toggles {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .chart-container {
+            flex: 1;
+            position: relative;
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 8px;
+            min-height: 300px;
+        }
+
+        /* Sidebar */
+        .monitor-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .feedback-card, .sweep-card {
+            padding: 16px;
+        }
+
+        .feedback-card h4, .sweep-card h4 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Compact Feedback */
+        .feedback-compact {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .fb-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+        }
+
+        .fb-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .fb-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+        }
+
+        /* Sweep Controls */
+        .sweep-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .sweep-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sweep-row label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .sweep-row input {
+            padding: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .sweep-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .sweep-buttons .btn {
+            flex: 1;
+        }
+
         /* Motion Profile Params */
         .param-input {
             display: flex;
@@ -961,6 +1178,7 @@
                     <!-- Tab Navigation -->
                     <div class="tab-nav">
                         <button class="tab-btn active" onclick="switchTab('control')">🎮 Control</button>
+                        <button class="tab-btn" onclick="switchTab('monitor')">📊 Monitor</button>
                         <button class="tab-btn" onclick="switchTab('settings')">⚙️ Settings</button>
                         <button class="tab-btn" onclick="switchTab('motion')">⚡ Motion</button>
                         <button class="tab-btn" onclick="switchTab('debug')">🔧 Debug</button>
@@ -1043,6 +1261,140 @@
                                 <button class="btn btn-primary" onclick="setTorque(true)">Enable Torque</button>
                                 <button class="btn btn-danger" onclick="setTorque(false)">Disable Torque</button>
                                 <button class="btn btn-secondary" onclick="pingServo()">Ping Servo</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============ TAB: Monitor ============ -->
+                    <div id="tab-monitor" class="tab-content">
+                        <div class="monitor-layout">
+                            <!-- Left: Chart Area -->
+                            <div class="monitor-chart-area">
+                                <div class="card" style="height: 100%;">
+                                    <!-- Header with controls -->
+                                    <div class="monitor-header">
+                                        <h3>📊 Real-time Monitor</h3>
+                                        <div class="monitor-controls">
+                                            <button class="btn btn-sm btn-secondary" id="chartPauseBtn" onclick="toggleChartPause()">⏸️</button>
+                                            <button class="btn btn-sm btn-secondary" onclick="clearChart()">🗑️</button>
+                                            <button class="btn btn-sm btn-secondary" onclick="exportChartData()">📥</button>
+                                            <span style="color: var(--text-secondary); font-size: 11px;"><span id="recordedSamples">0</span> samples</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Chart Legend / Toggles -->
+                                    <div class="chart-toggles">
+                                        <label class="chart-toggle">
+                                            <input type="checkbox" id="showPosition" checked onchange="updateChartVisibility()">
+                                            <span class="toggle-color" style="background: #ffffff;"></span>
+                                            Pos
+                                        </label>
+                                        <label class="chart-toggle">
+                                            <input type="checkbox" id="showSpeed" checked onchange="updateChartVisibility()">
+                                            <span class="toggle-color" style="background: #22c55e;"></span>
+                                            Speed
+                                        </label>
+                                        <label class="chart-toggle">
+                                            <input type="checkbox" id="showLoad" checked onchange="updateChartVisibility()">
+                                            <span class="toggle-color" style="background: #3b82f6;"></span>
+                                            Load
+                                        </label>
+                                        <label class="chart-toggle">
+                                            <input type="checkbox" id="showCurrent" onchange="updateChartVisibility()">
+                                            <span class="toggle-color" style="background: #f59e0b;"></span>
+                                            Cur
+                                        </label>
+                                        <label class="chart-toggle">
+                                            <input type="checkbox" id="showTemp" onchange="updateChartVisibility()">
+                                            <span class="toggle-color" style="background: #ef4444;"></span>
+                                            Temp
+                                        </label>
+                                        <label class="chart-toggle">
+                                            <input type="checkbox" id="showVoltage" onchange="updateChartVisibility()">
+                                            <span class="toggle-color" style="background: #8b5cf6;"></span>
+                                            Volt
+                                        </label>
+                                        <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
+                                            <input type="number" id="chartHistory" value="100" min="50" max="500" style="width: 60px; padding: 4px 8px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary); font-size: 12px;" onchange="updateChartHistory()" title="History samples">
+                                            <input type="number" id="chartUpdateRate" value="100" min="50" max="1000" style="width: 60px; padding: 4px 8px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary); font-size: 12px;" onchange="updateChartRate()" title="Update rate (ms)">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Chart Canvas -->
+                                    <div class="chart-container">
+                                        <canvas id="servoChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Feedback + Controls -->
+                            <div class="monitor-sidebar">
+                                <!-- Servo Feedback Panel -->
+                                <div class="card feedback-card">
+                                    <h4>📋 Feedback</h4>
+                                    <div class="feedback-compact">
+                                        <div class="fb-row">
+                                            <span class="fb-label">Position</span>
+                                            <span class="fb-value" id="fbPosition">—</span>
+                                        </div>
+                                        <div class="fb-row">
+                                            <span class="fb-label">Goal</span>
+                                            <span class="fb-value" id="fbGoal">—</span>
+                                        </div>
+                                        <div class="fb-row">
+                                            <span class="fb-label">Speed</span>
+                                            <span class="fb-value" id="fbSpeed">—</span>
+                                        </div>
+                                        <div class="fb-row">
+                                            <span class="fb-label">Load</span>
+                                            <span class="fb-value" id="fbLoad">—</span>
+                                        </div>
+                                        <div class="fb-row">
+                                            <span class="fb-label">Current</span>
+                                            <span class="fb-value" id="fbCurrent">—</span>
+                                        </div>
+                                        <div class="fb-row">
+                                            <span class="fb-label">Voltage</span>
+                                            <span class="fb-value" id="fbVoltage">—</span>
+                                        </div>
+                                        <div class="fb-row">
+                                            <span class="fb-label">Temp</span>
+                                            <span class="fb-value" id="fbTemp">—</span>
+                                        </div>
+                                        <div class="fb-row">
+                                            <span class="fb-label">Moving</span>
+                                            <span class="fb-value" id="fbMoving">—</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Auto Sweep -->
+                                <div class="card sweep-card">
+                                    <h4>🔄 Auto Sweep</h4>
+                                    <div class="sweep-inputs">
+                                        <div class="sweep-row">
+                                            <label>Start</label>
+                                            <input type="number" id="sweepStart" value="0" min="0" max="4095">
+                                        </div>
+                                        <div class="sweep-row">
+                                            <label>End</label>
+                                            <input type="number" id="sweepEnd" value="4095" min="0" max="4095">
+                                        </div>
+                                        <div class="sweep-row">
+                                            <label>Delay</label>
+                                            <input type="number" id="sweepDelay" value="2000" min="500" max="10000">
+                                        </div>
+                                        <div class="sweep-row">
+                                            <label>Cycles</label>
+                                            <input type="number" id="sweepCycles" value="3" min="1" max="100">
+                                        </div>
+                                    </div>
+                                    <div class="sweep-buttons">
+                                        <button class="btn btn-primary btn-sm" id="sweepBtn" onclick="startSweep()">▶️ Start</button>
+                                        <button class="btn btn-danger btn-sm" onclick="stopSweep()">⏹️ Stop</button>
+                                    </div>
+                                    <div id="sweepStatus" style="color: var(--text-secondary); font-size: 11px; margin-top: 8px; text-align: center;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1230,6 +1582,24 @@
         let servos = [];
         let ws = null;
         let currentTab = 'control';
+        
+        // ============ Chart Variables ============
+        let servoChart = null;
+        let chartData = {
+            labels: [],
+            position: [],
+            speed: [],
+            load: [],
+            current: [],
+            temperature: [],
+            voltage: []
+        };
+        let chartPaused = false;
+        let chartHistory = 100;
+        let chartUpdateRate = 100;
+        let sweepRunning = false;
+        let sweepInterval = null;
+        let recordedData = [];
 
         // Tab switching
         function switchTab(tabName) {
@@ -1389,6 +1759,28 @@
             tempCard.classList.remove('warning', 'danger');
             if (status.temperature > 60) tempCard.classList.add('danger');
             else if (status.temperature > 45) tempCard.classList.add('warning');
+            
+            // Update chart with data
+            updateChart({
+                position: status.position,
+                speed: status.speed || 0,
+                load: status.load || 0,
+                current: status.present_current || 0,
+                temperature: status.temperature,
+                voltage: status.voltage
+            });
+            
+            // Update feedback panel
+            updateFeedbackPanel({
+                position: status.position,
+                speed: status.speed || 0,
+                load: status.load || 0,
+                current: status.present_current || 0,
+                temperature: status.temperature,
+                voltage: status.voltage,
+                moving: status.moving_status || false,
+                goal_position: status.goal_position
+            });
         }
 
         // Position Control
@@ -1768,6 +2160,318 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
+        // ============ Chart Functions ============
+        function initChart() {
+            const ctx = document.getElementById('servoChart');
+            if (!ctx) return;
+            
+            servoChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Position',
+                            data: [],
+                            borderColor: '#ffffff',
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            pointRadius: 0,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Speed',
+                            data: [],
+                            borderColor: '#22c55e',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            pointRadius: 0,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Load',
+                            data: [],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            pointRadius: 0,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Current',
+                            data: [],
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            pointRadius: 0,
+                            hidden: true,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Temperature',
+                            data: [],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            pointRadius: 0,
+                            hidden: true,
+                            yAxisID: 'y2'
+                        },
+                        {
+                            label: 'Voltage',
+                            data: [],
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            pointRadius: 0,
+                            hidden: true,
+                            yAxisID: 'y2'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#8892a2', maxTicksLimit: 10 }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Position', color: '#ffffff' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#ffffff' },
+                            min: 0,
+                            max: 4095
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Speed/Load', color: '#22c55e' },
+                            grid: { drawOnChartArea: false },
+                            ticks: { color: '#22c55e' }
+                        },
+                        y2: {
+                            type: 'linear',
+                            display: false,
+                            position: 'right',
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart(data) {
+            if (!servoChart || chartPaused) return;
+            
+            const now = new Date().toLocaleTimeString('en-US', { hour12: false });
+            
+            // Add new data point
+            chartData.labels.push(now);
+            chartData.position.push(data.position || 0);
+            chartData.speed.push(data.speed || 0);
+            chartData.load.push(data.load || 0);
+            chartData.current.push(data.current || 0);
+            chartData.temperature.push(data.temperature || 0);
+            chartData.voltage.push(data.voltage || 0);
+            
+            // Keep only last N samples
+            if (chartData.labels.length > chartHistory) {
+                chartData.labels.shift();
+                chartData.position.shift();
+                chartData.speed.shift();
+                chartData.load.shift();
+                chartData.current.shift();
+                chartData.temperature.shift();
+                chartData.voltage.shift();
+            }
+            
+            // Update chart
+            servoChart.data.labels = chartData.labels;
+            servoChart.data.datasets[0].data = chartData.position;
+            servoChart.data.datasets[1].data = chartData.speed;
+            servoChart.data.datasets[2].data = chartData.load;
+            servoChart.data.datasets[3].data = chartData.current;
+            servoChart.data.datasets[4].data = chartData.temperature;
+            servoChart.data.datasets[5].data = chartData.voltage;
+            servoChart.update('none');
+            
+            // Record data for export
+            recordedData.push({
+                time: now,
+                position: data.position,
+                speed: data.speed,
+                load: data.load,
+                current: data.current,
+                temperature: data.temperature,
+                voltage: data.voltage
+            });
+            
+            // Limit recorded data
+            if (recordedData.length > 10000) {
+                recordedData.shift();
+            }
+            
+            document.getElementById('recordedSamples').textContent = recordedData.length;
+        }
+
+        function updateChartVisibility() {
+            if (!servoChart) return;
+            servoChart.data.datasets[0].hidden = !document.getElementById('showPosition').checked;
+            servoChart.data.datasets[1].hidden = !document.getElementById('showSpeed').checked;
+            servoChart.data.datasets[2].hidden = !document.getElementById('showLoad').checked;
+            servoChart.data.datasets[3].hidden = !document.getElementById('showCurrent').checked;
+            servoChart.data.datasets[4].hidden = !document.getElementById('showTemp').checked;
+            servoChart.data.datasets[5].hidden = !document.getElementById('showVoltage').checked;
+            servoChart.update();
+        }
+
+        function toggleChartPause() {
+            chartPaused = !chartPaused;
+            document.getElementById('chartPauseBtn').textContent = chartPaused ? '▶️ Resume' : '⏸️ Pause';
+        }
+
+        function clearChart() {
+            chartData = { labels: [], position: [], speed: [], load: [], current: [], temperature: [], voltage: [] };
+            recordedData = [];
+            if (servoChart) {
+                servoChart.data.labels = [];
+                servoChart.data.datasets.forEach(ds => ds.data = []);
+                servoChart.update();
+            }
+            document.getElementById('recordedSamples').textContent = '0';
+        }
+
+        function updateChartHistory() {
+            chartHistory = parseInt(document.getElementById('chartHistory').value) || 100;
+        }
+
+        function updateChartRate() {
+            chartUpdateRate = parseInt(document.getElementById('chartUpdateRate').value) || 100;
+        }
+
+        function updateFeedbackPanel(data) {
+            document.getElementById('fbVoltage').textContent = (data.voltage || 0).toFixed(1) + 'V';
+            document.getElementById('fbCurrent').textContent = (data.current || 0) + 'mA';
+            document.getElementById('fbTemp').textContent = (data.temperature || 0) + '°C';
+            document.getElementById('fbPosition').textContent = data.position || 0;
+            document.getElementById('fbSpeed').textContent = data.speed || 0;
+            document.getElementById('fbLoad').textContent = data.load || 0;
+            document.getElementById('fbMoving').textContent = data.moving ? 'Yes' : 'No';
+            document.getElementById('fbGoal').textContent = data.goal_position || '—';
+        }
+
+        // ============ Auto Sweep ============
+        async function startSweep() {
+            if (!selectedServoId || sweepRunning) return;
+            
+            const start = parseInt(document.getElementById('sweepStart').value);
+            const end = parseInt(document.getElementById('sweepEnd').value);
+            const delay = parseInt(document.getElementById('sweepDelay').value);
+            const cycles = parseInt(document.getElementById('sweepCycles').value);
+            
+            sweepRunning = true;
+            document.getElementById('sweepBtn').disabled = true;
+            
+            let currentCycle = 0;
+            let goingToEnd = true;
+            
+            const updateStatus = () => {
+                document.getElementById('sweepStatus').textContent = 
+                    `Cycle ${currentCycle + 1}/${cycles} - ${goingToEnd ? 'Forward' : 'Backward'}`;
+            };
+            
+            const doSweep = async () => {
+                if (!sweepRunning) {
+                    document.getElementById('sweepStatus').textContent = 'Stopped';
+                    document.getElementById('sweepBtn').disabled = false;
+                    return;
+                }
+                
+                updateStatus();
+                const target = goingToEnd ? end : start;
+                await api('/servo/position', 'POST', {
+                    servo_id: selectedServoId,
+                    position: target,
+                    time_ms: Math.floor(delay * 0.8)
+                });
+                
+                goingToEnd = !goingToEnd;
+                if (!goingToEnd) {
+                    currentCycle++;
+                }
+                
+                if (currentCycle >= cycles) {
+                    sweepRunning = false;
+                    document.getElementById('sweepStatus').textContent = `Completed ${cycles} cycles`;
+                    document.getElementById('sweepBtn').disabled = false;
+                    return;
+                }
+                
+                sweepInterval = setTimeout(doSweep, delay);
+            };
+            
+            doSweep();
+        }
+
+        function stopSweep() {
+            sweepRunning = false;
+            if (sweepInterval) {
+                clearTimeout(sweepInterval);
+                sweepInterval = null;
+            }
+            document.getElementById('sweepBtn').disabled = false;
+            document.getElementById('sweepStatus').textContent = 'Stopped';
+        }
+
+        // ============ Data Export ============
+        function exportChartData() {
+            if (recordedData.length === 0) {
+                showToast('No data to export', 'error');
+                return;
+            }
+            
+            const headers = ['Time', 'Position', 'Speed', 'Load', 'Current', 'Temperature', 'Voltage'];
+            const csvContent = [
+                headers.join(','),
+                ...recordedData.map(d => 
+                    [d.time, d.position, d.speed, d.load, d.current, d.temperature, d.voltage].join(',')
+                )
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const filename = `servo_${selectedServoId}_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.csv`;
+            
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            
+            showToast(`Exported ${recordedData.length} samples to ${filename}`, 'success');
+        }
+
         // ============ LocalStorage for settings persistence ============
         const STORAGE_KEY = 'servo_dashboard_settings';
         
@@ -1811,6 +2515,9 @@
         
         // Load settings on page load
         loadSettings();
+        
+        // Initialize chart
+        initChart();
         
         // Check initial status
         api('/status').then(status => {

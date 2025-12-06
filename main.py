@@ -8,7 +8,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
-from servo_controller import controller, ServoInfo
+from servo_controller import controller, ServoInfo, SERVO_REGISTERS
 
 app = FastAPI(title="Servo Test Dashboard")
 
@@ -44,6 +44,23 @@ class ScanRequest(BaseModel):
 class ChangeIdRequest(BaseModel):
     old_id: int
     new_id: int
+
+
+class RegisterWriteRequest(BaseModel):
+    servo_id: int
+    addr: int
+    size: int
+    value: int
+    unlock_eeprom: bool = False
+
+
+class MotionParamsRequest(BaseModel):
+    servo_id: int
+    amax: int = None
+    vmax: int = None
+    vmin: int = None
+    dts: int = None
+    vk: int = None
 
 
 # WebSocket connections for real-time updates
@@ -181,6 +198,55 @@ async def change_servo_id(req: ChangeIdRequest):
             "old_id": req.old_id,
             "new_id": req.new_id
         })
+    return {"success": success, "message": message}
+
+
+@app.get("/api/registers")
+async def get_register_definitions():
+    """Get all register definitions"""
+    return {"registers": SERVO_REGISTERS}
+
+
+@app.get("/api/servo/{servo_id}/registers")
+async def read_all_registers(servo_id: int):
+    """Read all registers from a servo"""
+    if not controller.is_connected:
+        raise HTTPException(status_code=400, detail="Not connected")
+    
+    registers = controller.read_all_registers(servo_id)
+    return {"servo_id": servo_id, "registers": registers}
+
+
+@app.get("/api/servo/{servo_id}/register/{addr}")
+async def read_register(servo_id: int, addr: int, size: int = 1):
+    """Read a specific register from servo"""
+    if not controller.is_connected:
+        raise HTTPException(status_code=400, detail="Not connected")
+    
+    value = controller.read_register(servo_id, addr, size)
+    return {"servo_id": servo_id, "addr": addr, "value": value}
+
+
+@app.post("/api/servo/register")
+async def write_register(req: RegisterWriteRequest):
+    """Write a value to a servo register"""
+    success, message = controller.write_register(
+        req.servo_id, req.addr, req.size, req.value, req.unlock_eeprom
+    )
+    return {"success": success, "message": message}
+
+
+@app.post("/api/servo/motion-params")
+async def set_motion_params(req: MotionParamsRequest):
+    """Set motion profile parameters (Amax, Vmax, Vmin, etc.)"""
+    success, message = controller.write_motion_params(
+        req.servo_id,
+        amax=req.amax,
+        vmax=req.vmax,
+        vmin=req.vmin,
+        dts=req.dts,
+        vk=req.vk
+    )
     return {"success": success, "message": message}
 
 

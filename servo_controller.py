@@ -6,23 +6,69 @@ from typing import Optional, Dict, List, Tuple
 from dataclasses import dataclass, asdict
 from scservo_sdk import *
 
-# SCS Servo Register Addresses (EEPROM - persistent)
+# SCS Servo Register Addresses (EEPROM - persistent, need unlock to write)
 ADDR_SCS_ID = 5                    # Servo ID (1-253)
 ADDR_SCS_BAUD_RATE = 6             # Baud rate
-ADDR_SCS_MIN_ANGLE_LIMIT = 9       # CW angle limit
-ADDR_SCS_MAX_ANGLE_LIMIT = 11      # CCW angle limit
-ADDR_SCS_LOCK = 55                 # EEPROM Lock (0=unlock, 1=lock)
+ADDR_SCS_MIN_ANGLE_LIMIT = 9       # CW angle limit (2 bytes)
+ADDR_SCS_MAX_ANGLE_LIMIT = 11      # CCW angle limit (2 bytes)
+ADDR_SCS_OVERCURRENT_PROT = 38     # Overcurrent protection (2 bytes)
+ADDR_SCS_VELOCITY_I_GAIN = 39      # Velocity I Gain (1 byte)
 
 # SCS Servo Register Addresses (RAM - volatile)
-ADDR_SCS_TORQUE_ENABLE = 40
-ADDR_SCS_GOAL_POSITION = 42
-ADDR_SCS_GOAL_TIME = 46
+ADDR_SCS_TORQUE_ENABLE = 40        # Torque enable (1 byte)
+ADDR_SCS_GOAL_ACCELERATION = 41    # Goal acceleration (1 byte)
+ADDR_SCS_GOAL_POSITION = 42        # Goal position (2 bytes)
+ADDR_SCS_GOAL_TIME = 46            # Goal time/speed (2 bytes)
 ADDR_SCS_GOAL_SPEED = 46
-ADDR_SCS_PRESENT_POSITION = 56
-ADDR_SCS_PRESENT_SPEED = 58
-ADDR_SCS_PRESENT_LOAD = 60
-ADDR_SCS_PRESENT_VOLTAGE = 62
-ADDR_SCS_PRESENT_TEMPERATURE = 63
+ADDR_SCS_TORQUE_LIMIT = 48         # Torque limit (2 bytes)
+ADDR_SCS_LOCK = 55                 # EEPROM Lock (0=unlock, 1=lock)
+ADDR_SCS_PRESENT_POSITION = 56     # Present position (2 bytes, read-only)
+ADDR_SCS_PRESENT_SPEED = 58        # Present speed (2 bytes, read-only)
+ADDR_SCS_PRESENT_LOAD = 60         # Present load (2 bytes, read-only)
+ADDR_SCS_PRESENT_VOLTAGE = 62      # Present voltage (1 byte, read-only)
+ADDR_SCS_PRESENT_TEMPERATURE = 63  # Present temperature (1 byte, read-only)
+
+# SCS Servo Register Addresses (DEFAULT - motion profile parameters)
+ADDR_SCS_MOVING_THRESHOLD = 80     # Moving threshold (1 byte)
+ADDR_SCS_DTS = 81                  # DTs in ms (1 byte)
+ADDR_SCS_VK = 82                   # Vk in ms (1 byte)  
+ADDR_SCS_VMIN = 83                 # Vmin (1 byte)
+ADDR_SCS_VMAX = 84                 # Vmax (1 byte)
+ADDR_SCS_AMAX = 85                 # Amax - Max acceleration (1 byte)
+ADDR_SCS_KACC = 86                 # KAcc (1 byte)
+
+# Register definitions for UI
+SERVO_REGISTERS = {
+    # EEPROM registers (need unlock)
+    'id': {'addr': 5, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Servo ID'},
+    'baud_rate': {'addr': 6, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Baud Rate'},
+    'min_angle': {'addr': 9, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Min Angle Limit'},
+    'max_angle': {'addr': 11, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Max Angle Limit'},
+    'overcurrent': {'addr': 38, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Overcurrent Protection'},
+    'velocity_i_gain': {'addr': 39, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Velocity I Gain'},
+    
+    # SRAM registers
+    'torque_enable': {'addr': 40, 'size': 1, 'area': 'SRAM', 'rw': 'rw', 'name': 'Torque Enable'},
+    'goal_acceleration': {'addr': 41, 'size': 1, 'area': 'SRAM', 'rw': 'rw', 'name': 'Goal Acceleration'},
+    'goal_position': {'addr': 42, 'size': 2, 'area': 'SRAM', 'rw': 'rw', 'name': 'Goal Position'},
+    'goal_speed': {'addr': 46, 'size': 2, 'area': 'SRAM', 'rw': 'rw', 'name': 'Goal Speed'},
+    'torque_limit': {'addr': 48, 'size': 2, 'area': 'SRAM', 'rw': 'rw', 'name': 'Torque Limit'},
+    'lock': {'addr': 55, 'size': 1, 'area': 'SRAM', 'rw': 'rw', 'name': 'EEPROM Lock'},
+    'present_position': {'addr': 56, 'size': 2, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Position'},
+    'present_speed': {'addr': 58, 'size': 2, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Speed'},
+    'present_load': {'addr': 60, 'size': 2, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Load'},
+    'present_voltage': {'addr': 62, 'size': 1, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Voltage'},
+    'present_temp': {'addr': 63, 'size': 1, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Temperature'},
+    
+    # Motion profile (DEFAULT area)
+    'moving_threshold': {'addr': 80, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Moving Threshold'},
+    'dts': {'addr': 81, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'DTs (ms)'},
+    'vk': {'addr': 82, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Vk (ms)'},
+    'vmin': {'addr': 83, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Vmin'},
+    'vmax': {'addr': 84, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Vmax'},
+    'amax': {'addr': 85, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Amax'},
+    'kacc': {'addr': 86, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'KAcc'},
+}
 
 
 @dataclass
@@ -321,6 +367,104 @@ class ServoController:
             if comm_result == COMM_SUCCESS:
                 return read_id
             return None
+    
+    def read_register(self, servo_id: int, addr: int, size: int) -> Optional[int]:
+        """Read a register value from servo"""
+        if not self.is_connected:
+            return None
+        
+        with self._lock:
+            if size == 1:
+                value, comm_result, _ = self.packet_handler.read1ByteTxRx(
+                    self.port_handler, servo_id, addr
+                )
+            else:  # size == 2
+                value, comm_result, _ = self.packet_handler.read2ByteTxRx(
+                    self.port_handler, servo_id, addr
+                )
+            
+            if comm_result == COMM_SUCCESS:
+                return value
+            return None
+    
+    def write_register(self, servo_id: int, addr: int, size: int, value: int, unlock_eeprom: bool = False) -> Tuple[bool, str]:
+        """Write a value to servo register"""
+        if not self.is_connected:
+            return False, "Not connected"
+        
+        try:
+            # For EEPROM registers, unlock first
+            if unlock_eeprom:
+                self.unlock_eeprom(servo_id)
+            
+            with self._lock:
+                if size == 1:
+                    comm_result, _ = self.packet_handler.write1ByteTxRx(
+                        self.port_handler, servo_id, addr, value
+                    )
+                else:  # size == 2
+                    comm_result, _ = self.packet_handler.write2ByteTxRx(
+                        self.port_handler, servo_id, addr, value
+                    )
+            
+            # Lock EEPROM after writing
+            if unlock_eeprom:
+                self.lock_eeprom(servo_id)
+            
+            if comm_result == COMM_SUCCESS:
+                return True, f"Written {value} to address {addr}"
+            else:
+                return False, f"Failed to write to address {addr}"
+        except Exception as e:
+            return False, str(e)
+    
+    def read_all_registers(self, servo_id: int) -> Dict:
+        """Read all defined registers from a servo"""
+        if not self.is_connected:
+            return {}
+        
+        result = {}
+        for key, reg in SERVO_REGISTERS.items():
+            value = self.read_register(servo_id, reg['addr'], reg['size'])
+            result[key] = {
+                'addr': reg['addr'],
+                'name': reg['name'],
+                'value': value,
+                'area': reg['area'],
+                'rw': reg['rw'],
+                'size': reg['size']
+            }
+        
+        return result
+    
+    def write_motion_params(self, servo_id: int, amax: int = None, vmax: int = None, 
+                           vmin: int = None, dts: int = None, vk: int = None) -> Tuple[bool, str]:
+        """Write motion profile parameters"""
+        if not self.is_connected:
+            return False, "Not connected"
+        
+        results = []
+        if amax is not None:
+            success, msg = self.write_register(servo_id, ADDR_SCS_AMAX, 1, amax)
+            results.append(f"Amax: {'OK' if success else 'FAIL'}")
+        
+        if vmax is not None:
+            success, msg = self.write_register(servo_id, ADDR_SCS_VMAX, 1, vmax)
+            results.append(f"Vmax: {'OK' if success else 'FAIL'}")
+        
+        if vmin is not None:
+            success, msg = self.write_register(servo_id, ADDR_SCS_VMIN, 1, vmin)
+            results.append(f"Vmin: {'OK' if success else 'FAIL'}")
+        
+        if dts is not None:
+            success, msg = self.write_register(servo_id, ADDR_SCS_DTS, 1, dts)
+            results.append(f"DTs: {'OK' if success else 'FAIL'}")
+        
+        if vk is not None:
+            success, msg = self.write_register(servo_id, ADDR_SCS_VK, 1, vk)
+            results.append(f"Vk: {'OK' if success else 'FAIL'}")
+        
+        return True, ", ".join(results)
 
 
 # Global controller instance

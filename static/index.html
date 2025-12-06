@@ -593,6 +593,136 @@
         .hidden {
             display: none !important;
         }
+
+        /* Motion Profile Params */
+        .param-input {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .param-input label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .param-input input {
+            padding: 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .param-input input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        /* Register Table */
+        .register-table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .register-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .register-table th {
+            background: var(--bg-tertiary);
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .register-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .register-table tr:hover {
+            background: rgba(0, 245, 212, 0.05);
+        }
+
+        .register-table .addr {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+        }
+
+        .register-table .value-input {
+            width: 80px;
+            padding: 6px 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+        }
+
+        .register-table .value-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        .register-table .area-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .register-table .area-eprom {
+            background: rgba(247, 37, 133, 0.2);
+            color: var(--accent-magenta);
+        }
+
+        .register-table .area-sram {
+            background: rgba(0, 245, 212, 0.2);
+            color: var(--accent-cyan);
+        }
+
+        .register-table .area-default {
+            background: rgba(254, 228, 64, 0.2);
+            color: var(--accent-yellow);
+        }
+
+        .register-table .btn-write {
+            padding: 4px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .register-table .btn-write:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 245, 212, 0.1);
+        }
+
+        .register-table .btn-write:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -799,6 +929,66 @@
                             <button class="btn btn-primary" onclick="setTorque(true)">Enable Torque</button>
                             <button class="btn btn-danger" onclick="setTorque(false)">Disable Torque</button>
                             <button class="btn btn-secondary" onclick="pingServo()">Ping Servo</button>
+                        </div>
+                    </div>
+
+                    <!-- Motion Profile Parameters -->
+                    <div class="card">
+                        <h3>⚡ Motion Profile</h3>
+                        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px;">
+                            <div class="param-input">
+                                <label>Amax</label>
+                                <input type="number" id="paramAmax" value="254" min="0" max="254">
+                            </div>
+                            <div class="param-input">
+                                <label>Vmax</label>
+                                <input type="number" id="paramVmax" value="65" min="0" max="255">
+                            </div>
+                            <div class="param-input">
+                                <label>Vmin</label>
+                                <input type="number" id="paramVmin" value="1" min="0" max="255">
+                            </div>
+                            <div class="param-input">
+                                <label>DTs (ms)</label>
+                                <input type="number" id="paramDts" value="20" min="0" max="255">
+                            </div>
+                            <div class="param-input">
+                                <label>Vk (ms)</label>
+                                <input type="number" id="paramVk" value="50" min="0" max="255">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-secondary" onclick="readMotionParams()">Read</button>
+                            <button class="btn btn-primary" onclick="writeMotionParams()">Write</button>
+                        </div>
+                    </div>
+
+                    <!-- Debug Register Table -->
+                    <div class="card">
+                        <h3>🔧 Debug - All Registers</h3>
+                        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                            <button class="btn btn-secondary" onclick="loadAllRegisters()">Load All Registers</button>
+                        </div>
+                        <div class="register-table-container">
+                            <table class="register-table" id="registerTable">
+                                <thead>
+                                    <tr>
+                                        <th>Addr</th>
+                                        <th>Name</th>
+                                        <th>Value</th>
+                                        <th>Area</th>
+                                        <th>R/W</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="registerTableBody">
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; color: var(--text-secondary);">
+                                            Click "Load All Registers" to view
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -1082,6 +1272,123 @@
             } else {
                 showToast(result.message, 'error');
             }
+        }
+
+        // Motion Profile Parameters
+        async function readMotionParams() {
+            if (!selectedServoId) {
+                showToast('Select a servo first', 'error');
+                return;
+            }
+            
+            const result = await api(`/servo/${selectedServoId}/registers`);
+            if (result.registers) {
+                const regs = result.registers;
+                if (regs.amax?.value !== null) document.getElementById('paramAmax').value = regs.amax.value;
+                if (regs.vmax?.value !== null) document.getElementById('paramVmax').value = regs.vmax.value;
+                if (regs.vmin?.value !== null) document.getElementById('paramVmin').value = regs.vmin.value;
+                if (regs.dts?.value !== null) document.getElementById('paramDts').value = regs.dts.value;
+                if (regs.vk?.value !== null) document.getElementById('paramVk').value = regs.vk.value;
+                showToast('Motion params loaded', 'success');
+            }
+        }
+
+        async function writeMotionParams() {
+            if (!selectedServoId) {
+                showToast('Select a servo first', 'error');
+                return;
+            }
+            
+            const result = await api('/servo/motion-params', 'POST', {
+                servo_id: selectedServoId,
+                amax: parseInt(document.getElementById('paramAmax').value),
+                vmax: parseInt(document.getElementById('paramVmax').value),
+                vmin: parseInt(document.getElementById('paramVmin').value),
+                dts: parseInt(document.getElementById('paramDts').value),
+                vk: parseInt(document.getElementById('paramVk').value)
+            });
+            
+            showToast(result.message, result.success ? 'success' : 'error');
+        }
+
+        // Debug Register Table
+        async function loadAllRegisters() {
+            if (!selectedServoId) {
+                showToast('Select a servo first', 'error');
+                return;
+            }
+            
+            showToast('Loading registers...', 'success');
+            const result = await api(`/servo/${selectedServoId}/registers`);
+            
+            if (result.registers) {
+                renderRegisterTable(result.registers);
+            }
+        }
+
+        function renderRegisterTable(registers) {
+            const tbody = document.getElementById('registerTableBody');
+            const sortedRegs = Object.entries(registers).sort((a, b) => a[1].addr - b[1].addr);
+            
+            tbody.innerHTML = sortedRegs.map(([key, reg]) => {
+                const areaClass = reg.area === 'EPROM' ? 'area-eprom' : 
+                                  reg.area === 'SRAM' ? 'area-sram' : 'area-default';
+                const isWritable = reg.rw === 'rw';
+                const displayValue = reg.value !== null ? reg.value : '—';
+                
+                return `
+                    <tr>
+                        <td class="addr">${reg.addr}</td>
+                        <td>${reg.name}</td>
+                        <td>
+                            ${isWritable ? 
+                                `<input type="number" class="value-input" id="reg_${key}" value="${displayValue}" data-addr="${reg.addr}" data-size="${reg.size}" data-area="${reg.area}">` :
+                                `<span style="font-family: 'JetBrains Mono', monospace;">${displayValue}</span>`
+                            }
+                        </td>
+                        <td><span class="area-badge ${areaClass}">${reg.area}</span></td>
+                        <td style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">${reg.rw}</td>
+                        <td>
+                            ${isWritable ? 
+                                `<button class="btn-write" onclick="writeRegister('${key}')">Write</button>` :
+                                `<button class="btn-write" disabled>—</button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function writeRegister(key) {
+            if (!selectedServoId) return;
+            
+            const input = document.getElementById(`reg_${key}`);
+            const addr = parseInt(input.dataset.addr);
+            const size = parseInt(input.dataset.size);
+            const area = input.dataset.area;
+            const value = parseInt(input.value);
+            
+            if (isNaN(value)) {
+                showToast('Invalid value', 'error');
+                return;
+            }
+            
+            // For EPROM, need to unlock
+            const unlockEeprom = area === 'EPROM';
+            
+            if (unlockEeprom && !confirm(`⚠️ Writing to EEPROM register!\n\nThis will permanently change the servo setting.\nContinue?`)) {
+                return;
+            }
+            
+            const result = await api('/servo/register', 'POST', {
+                servo_id: selectedServoId,
+                addr: addr,
+                size: size,
+                value: value,
+                unlock_eeprom: unlockEeprom
+            });
+            
+            showToast(result.message, result.success ? 'success' : 'error');
         }
 
         // Toast Notifications

@@ -594,6 +594,64 @@
             display: none !important;
         }
 
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-secondary);
+            padding: 8px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            color: var(--bg-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .tab-nav {
+                flex-wrap: wrap;
+            }
+            .tab-btn {
+                flex: 1 1 45%;
+            }
+        }
+
         /* Motion Profile Params */
         .param-input {
             display: flex;
@@ -723,6 +781,75 @@
             opacity: 0.3;
             cursor: not-allowed;
         }
+
+        /* Tooltip styles */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-primary);
+            border: 1px solid var(--accent-cyan);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre-line;
+            width: max-content;
+            max-width: 300px;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+        }
+
+        [data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Table row tooltip */
+        .register-table tr[data-tooltip]::after {
+            left: 200px;
+            transform: none;
+            bottom: auto;
+            top: 0;
+        }
+
+        .tooltip-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            font-size: 10px;
+            color: var(--text-secondary);
+            cursor: help;
+            margin-left: 6px;
+        }
+
+        .tooltip-icon:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .register-info {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
@@ -800,7 +927,7 @@
                     <div style="background: rgba(254, 228, 64, 0.1); border: 1px solid var(--warning); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
                         <div style="display: flex; align-items: center; gap: 8px; color: var(--warning); font-size: 12px;">
                             <span>⚠️</span>
-                            <span>Chỉ kết nối 1 servo khi đổi ID!</span>
+                            <span>Connect only 1 servo when changing ID!</span>
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; margin-bottom: 12px;">
@@ -829,166 +956,264 @@
                     <p style="margin-top: 8px;">Scan for servos and select one to control</p>
                 </div>
 
-                <!-- Servo Control Panel -->
+                <!-- Servo Control Panel with Tabs -->
                 <div id="servoControlPanel" class="hidden">
-                    <!-- Position Control -->
-                    <div class="card position-control">
-                        <h3>🎮 Position Control — Servo <span id="selectedServoId">1</span></h3>
-                        <div class="position-display">
-                            <span class="position-value" id="currentPosition">2048</span>
-                            <span class="position-unit">/ 4095</span>
-                        </div>
-                        <div class="slider-container">
-                            <input type="range" class="slider" id="positionSlider" min="0" max="4095" value="2048" oninput="updatePosition(this.value)">
-                            <div class="slider-labels">
-                                <span>0°</span>
-                                <span>90°</span>
-                                <span>180°</span>
-                                <span>270°</span>
-                                <span>360°</span>
+                    <!-- Tab Navigation -->
+                    <div class="tab-nav">
+                        <button class="tab-btn active" onclick="switchTab('control')">🎮 Control</button>
+                        <button class="tab-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+                        <button class="tab-btn" onclick="switchTab('motion')">⚡ Motion</button>
+                        <button class="tab-btn" onclick="switchTab('debug')">🔧 Debug</button>
+                    </div>
+
+                    <!-- ============ TAB: Control ============ -->
+                    <div id="tab-control" class="tab-content active">
+                        <!-- Position Control -->
+                        <div class="card position-control">
+                            <h3>🎮 Position Control — Servo <span id="selectedServoId">1</span></h3>
+                            <div class="position-display">
+                                <span class="position-value" id="currentPosition">2048</span>
+                                <span class="position-unit">/ 4095</span>
+                            </div>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="positionSlider" min="0" max="4095" value="2048" oninput="updatePosition(this.value)">
+                                <div class="slider-labels">
+                                    <span>0°</span>
+                                    <span>90°</span>
+                                    <span>180°</span>
+                                    <span>270°</span>
+                                    <span>360°</span>
+                                </div>
+                            </div>
+                            <div class="quick-actions">
+                                <button class="action-btn" onclick="setQuickPosition(0)">
+                                    <div class="icon">⬅️</div>
+                                    <div class="label">Min (0)</div>
+                                </button>
+                                <button class="action-btn" onclick="setQuickPosition(1024)">
+                                    <div class="icon">↙️</div>
+                                    <div class="label">90° (1024)</div>
+                                </button>
+                                <button class="action-btn" onclick="centerServo()">
+                                    <div class="icon">🎯</div>
+                                    <div class="label">Center (2048)</div>
+                                </button>
+                                <button class="action-btn" onclick="setQuickPosition(3072)">
+                                    <div class="icon">↗️</div>
+                                    <div class="label">270° (3072)</div>
+                                </button>
+                                <button class="action-btn" onclick="setQuickPosition(4095)">
+                                    <div class="icon">➡️</div>
+                                    <div class="label">Max (4095)</div>
+                                </button>
+                                <button class="action-btn" onclick="testRange()">
+                                    <div class="icon">🔄</div>
+                                    <div class="label">Test Range</div>
+                                </button>
                             </div>
                         </div>
-                        <div class="quick-actions">
-                            <button class="action-btn" onclick="setQuickPosition(0)">
-                                <div class="icon">⬅️</div>
-                                <div class="label">Min (0)</div>
-                            </button>
-                            <button class="action-btn" onclick="setQuickPosition(1024)">
-                                <div class="icon">↙️</div>
-                                <div class="label">90° (1024)</div>
-                            </button>
-                            <button class="action-btn" onclick="centerServo()">
-                                <div class="icon">🎯</div>
-                                <div class="label">Center (2048)</div>
-                            </button>
-                            <button class="action-btn" onclick="setQuickPosition(3072)">
-                                <div class="icon">↗️</div>
-                                <div class="label">270° (3072)</div>
-                            </button>
-                            <button class="action-btn" onclick="setQuickPosition(4095)">
-                                <div class="icon">➡️</div>
-                                <div class="label">Max (4095)</div>
-                            </button>
-                            <button class="action-btn" onclick="testRange()">
-                                <div class="icon">🔄</div>
-                                <div class="label">Test Range</div>
-                            </button>
+
+                        <!-- Status Cards -->
+                        <div class="card">
+                            <h3>📈 Live Status</h3>
+                            <div class="status-grid">
+                                <div class="status-card">
+                                    <div class="value" id="livePosition">—</div>
+                                    <div class="label">Position</div>
+                                </div>
+                                <div class="status-card">
+                                    <div class="value" id="liveLoad">—</div>
+                                    <div class="label">Load %</div>
+                                </div>
+                                <div class="status-card">
+                                    <div class="value" id="liveVoltage">—</div>
+                                    <div class="label">Voltage</div>
+                                </div>
+                                <div class="status-card" id="tempCard">
+                                    <div class="value" id="liveTemp">—</div>
+                                    <div class="label">Temp °C</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Torque Control -->
+                        <div class="card">
+                            <h3>💪 Torque Control</h3>
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                <button class="btn btn-primary" onclick="setTorque(true)">Enable Torque</button>
+                                <button class="btn btn-danger" onclick="setTorque(false)">Disable Torque</button>
+                                <button class="btn btn-secondary" onclick="pingServo()">Ping Servo</button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Status Cards -->
-                    <div class="card">
-                        <h3>📈 Live Status</h3>
-                        <div class="status-grid">
-                            <div class="status-card">
-                                <div class="value" id="livePosition">—</div>
-                                <div class="label">Position</div>
+                    <!-- ============ TAB: Settings ============ -->
+                    <div id="tab-settings" class="tab-content">
+                        <!-- Calibration -->
+                        <div class="card">
+                            <h3>📐 Calibration</h3>
+                            <div class="calibration-grid">
+                                <div class="calibration-input">
+                                    <label>Min Position</label>
+                                    <input type="number" id="calibMin" value="0" min="0" max="4095">
+                                </div>
+                                <div class="calibration-input">
+                                    <label>Center Position</label>
+                                    <input type="number" id="calibCenter" value="2048" min="0" max="4095">
+                                </div>
+                                <div class="calibration-input">
+                                    <label>Max Position</label>
+                                    <input type="number" id="calibMax" value="4095" min="0" max="4095">
+                                </div>
                             </div>
-                            <div class="status-card">
-                                <div class="value" id="liveLoad">—</div>
-                                <div class="label">Load %</div>
+                            <div style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+                                <button class="btn btn-secondary" onclick="readCurrentAsCenter()">Set Current as Center</button>
+                                <button class="btn btn-primary" onclick="saveCalibration()">Save Calibration</button>
                             </div>
-                            <div class="status-card">
-                                <div class="value" id="liveVoltage">—</div>
-                                <div class="label">Voltage</div>
+                        </div>
+
+                        <!-- PID Settings -->
+                        <div class="card">
+                            <h3>🎛️ PID Tuning</h3>
+                            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">
+                                Position PID controller gains (stored in EPROM)
+                            </p>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                                <div class="param-input" data-tooltip="Position P Gain&#10;Proportional gain - higher = faster response but may overshoot&#10;Range: 0-255 | Default: 32">
+                                    <label>P Gain</label>
+                                    <input type="number" id="pidP" value="32" min="0" max="255">
+                                </div>
+                                <div class="param-input" data-tooltip="Position I Gain&#10;Integral gain - reduces steady-state error&#10;Range: 0-255 | Default: 0">
+                                    <label>I Gain</label>
+                                    <input type="number" id="pidI" value="0" min="0" max="255">
+                                </div>
+                                <div class="param-input" data-tooltip="Position D Gain&#10;Derivative gain - dampens oscillation&#10;Range: 0-255 | Default: 32">
+                                    <label>D Gain</label>
+                                    <input type="number" id="pidD" value="32" min="0" max="255">
+                                </div>
                             </div>
-                            <div class="status-card" id="tempCard">
-                                <div class="value" id="liveTemp">—</div>
-                                <div class="label">Temp °C</div>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn btn-secondary" onclick="readPidParams()">📖 Read</button>
+                                <button class="btn btn-primary" onclick="writePidParams()">💾 Write (EPROM)</button>
+                            </div>
+                        </div>
+
+                        <!-- Protection Settings -->
+                        <div class="card">
+                            <h3>🛡️ Protection Settings</h3>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                                <div class="param-input" data-tooltip="Max Temperature Limit&#10;Servo disables when exceeded&#10;Unit: °C | Default: 70">
+                                    <label>Max Temp °C</label>
+                                    <input type="number" id="protMaxTemp" value="70" min="0" max="100">
+                                </div>
+                                <div class="param-input" data-tooltip="Max Input Voltage&#10;Value ÷10 = Volts&#10;Default: 140 (14V)">
+                                    <label>Max Voltage</label>
+                                    <input type="number" id="protMaxVolt" value="140" min="0" max="255">
+                                </div>
+                                <div class="param-input" data-tooltip="Min Input Voltage&#10;Value ÷10 = Volts&#10;Default: 40 (4V)">
+                                    <label>Min Voltage</label>
+                                    <input type="number" id="protMinVolt" value="40" min="0" max="255">
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn btn-secondary" onclick="readProtectionParams()">📖 Read</button>
+                                <button class="btn btn-primary" onclick="writeProtectionParams()">💾 Write (EPROM)</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Calibration -->
-                    <div class="card">
-                        <h3>⚙️ Calibration</h3>
-                        <div class="calibration-grid">
-                            <div class="calibration-input">
-                                <label>Min Position</label>
-                                <input type="number" id="calibMin" value="0" min="0" max="4095">
+                    <!-- ============ TAB: Motion ============ -->
+                    <div id="tab-motion" class="tab-content">
+                        <!-- Motion Profile Parameters -->
+                        <div class="card">
+                            <h3>⚡ Motion Profile</h3>
+                            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">
+                                Hover over parameters to see detailed descriptions
+                            </p>
+                            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px;">
+                                <div class="param-input" data-tooltip="⚡ Amax (Max Acceleration)&#10;&#10;Controls how fast servo speeds up/slows down.&#10;• HIGH value (254): Sharp, fast motion&#10;• LOW value (50): Smooth, gradual motion&#10;&#10;Range: 0-254 | Default: 50">
+                                    <label>⚡ Amax</label>
+                                    <input type="number" id="paramAmax" value="50" min="0" max="254">
+                                </div>
+                                <div class="param-input" data-tooltip="🚀 Vmax (Max Velocity)&#10;&#10;Servo will not move faster than this value.&#10;• HIGH value: Fast movement&#10;• LOW value: Slow movement&#10;&#10;Unit: steps/s ×50&#10;Range: 0-255 | Default: 65">
+                                    <label>🚀 Vmax</label>
+                                    <input type="number" id="paramVmax" value="65" min="0" max="255">
+                                </div>
+                                <div class="param-input" data-tooltip="🐢 Vmin (Min Velocity)&#10;&#10;Servo will not move slower than this value.&#10;Prevents servo from stalling at very low speeds.&#10;&#10;Unit: steps/s&#10;Range: 0-255 | Default: 1">
+                                    <label>🐢 Vmin</label>
+                                    <input type="number" id="paramVmin" value="1" min="0" max="255">
+                                </div>
+                                <div class="param-input" data-tooltip="⏱️ DTs (Dead Time)&#10;&#10;Delay before movement starts.&#10;Helps smooth motion when changing direction.&#10;&#10;Unit: milliseconds (ms)&#10;Range: 0-255 | Default: 20">
+                                    <label>⏱️ DTs</label>
+                                    <input type="number" id="paramDts" value="20" min="0" max="255">
+                                </div>
+                                <div class="param-input" data-tooltip="📈 Vk (Velocity Constant)&#10;&#10;Affects smoothness of velocity curve.&#10;Higher value = smoother curve.&#10;&#10;Unit: milliseconds (ms)&#10;Range: 0-255 | Default: 50">
+                                    <label>📈 Vk</label>
+                                    <input type="number" id="paramVk" value="50" min="0" max="255">
+                                </div>
                             </div>
-                            <div class="calibration-input">
-                                <label>Center Position</label>
-                                <input type="number" id="calibCenter" value="2048" min="0" max="4095">
-                            </div>
-                            <div class="calibration-input">
-                                <label>Max Position</label>
-                                <input type="number" id="calibMax" value="4095" min="0" max="4095">
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn btn-secondary" onclick="readMotionParams()">📖 Read</button>
+                                <button class="btn btn-primary" onclick="writeMotionParams()">💾 Write</button>
                             </div>
                         </div>
-                        <div style="margin-top: 16px; display: flex; gap: 12px;">
-                            <button class="btn btn-secondary" onclick="readCurrentAsCenter()">Set Current as Center</button>
-                            <button class="btn btn-primary" onclick="saveCalibration()">Save Calibration</button>
+
+                        <!-- Velocity PID -->
+                        <div class="card">
+                            <h3>🎚️ Velocity PID</h3>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px;">
+                                <div class="param-input" data-tooltip="Velocity P Gain&#10;Range: 0-255 | Default: 10">
+                                    <label>Velocity P</label>
+                                    <input type="number" id="velP" value="10" min="0" max="255">
+                                </div>
+                                <div class="param-input" data-tooltip="Velocity I Gain&#10;Range: 0-255 | Default: 200">
+                                    <label>Velocity I</label>
+                                    <input type="number" id="velI" value="200" min="0" max="255">
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn btn-secondary" onclick="readVelocityPid()">📖 Read</button>
+                                <button class="btn btn-primary" onclick="writeVelocityPid()">💾 Write (EPROM)</button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Torque Control -->
-                    <div class="card">
-                        <h3>💪 Torque Control</h3>
-                        <div style="display: flex; gap: 12px;">
-                            <button class="btn btn-primary" onclick="setTorque(true)">Enable Torque</button>
-                            <button class="btn btn-danger" onclick="setTorque(false)">Disable Torque</button>
-                            <button class="btn btn-secondary" onclick="pingServo()">Ping Servo</button>
-                        </div>
-                    </div>
-
-                    <!-- Motion Profile Parameters -->
-                    <div class="card">
-                        <h3>⚡ Motion Profile</h3>
-                        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px;">
-                            <div class="param-input">
-                                <label>Amax</label>
-                                <input type="number" id="paramAmax" value="254" min="0" max="254">
+                    <!-- ============ TAB: Debug ============ -->
+                    <div id="tab-debug" class="tab-content">
+                        <!-- Debug Register Table -->
+                        <div class="card">
+                            <h3>🔧 All Registers</h3>
+                            <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
+                                <button class="btn btn-secondary" onclick="loadAllRegisters()">Load All Registers</button>
+                                <select id="registerFilter" onchange="filterRegisters()" style="padding: 8px 12px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 13px;">
+                                    <option value="all">All Areas</option>
+                                    <option value="EPROM">EPROM (persistent)</option>
+                                    <option value="SRAM">SRAM (volatile)</option>
+                                    <option value="DEFAULT">DEFAULT (motion)</option>
+                                </select>
+                                <span style="color: var(--text-secondary); font-size: 12px;" id="registerCount">—</span>
                             </div>
-                            <div class="param-input">
-                                <label>Vmax</label>
-                                <input type="number" id="paramVmax" value="65" min="0" max="255">
+                            <div class="register-table-container" style="max-height: 500px;">
+                                <table class="register-table" id="registerTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Addr</th>
+                                            <th>Name</th>
+                                            <th>Value</th>
+                                            <th>Area</th>
+                                            <th>R/W</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="registerTableBody">
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; color: var(--text-secondary);">
+                                                Click "Load All Registers" to view
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
-                            <div class="param-input">
-                                <label>Vmin</label>
-                                <input type="number" id="paramVmin" value="1" min="0" max="255">
-                            </div>
-                            <div class="param-input">
-                                <label>DTs (ms)</label>
-                                <input type="number" id="paramDts" value="20" min="0" max="255">
-                            </div>
-                            <div class="param-input">
-                                <label>Vk (ms)</label>
-                                <input type="number" id="paramVk" value="50" min="0" max="255">
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 12px;">
-                            <button class="btn btn-secondary" onclick="readMotionParams()">Read</button>
-                            <button class="btn btn-primary" onclick="writeMotionParams()">Write</button>
-                        </div>
-                    </div>
-
-                    <!-- Debug Register Table -->
-                    <div class="card">
-                        <h3>🔧 Debug - All Registers</h3>
-                        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-                            <button class="btn btn-secondary" onclick="loadAllRegisters()">Load All Registers</button>
-                        </div>
-                        <div class="register-table-container">
-                            <table class="register-table" id="registerTable">
-                                <thead>
-                                    <tr>
-                                        <th>Addr</th>
-                                        <th>Name</th>
-                                        <th>Value</th>
-                                        <th>Area</th>
-                                        <th>R/W</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="registerTableBody">
-                                    <tr>
-                                        <td colspan="6" style="text-align: center; color: var(--text-secondary);">
-                                            Click "Load All Registers" to view
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
@@ -1004,6 +1229,29 @@
         let selectedServoId = null;
         let servos = [];
         let ws = null;
+        let currentTab = 'control';
+
+        // Tab switching
+        function switchTab(tabName) {
+            currentTab = tabName;
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.onclick.toString().includes(`'${tabName}'`)) {
+                    btn.classList.add('active');
+                }
+            });
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            // Auto-load registers when switching to debug tab
+            if (tabName === 'debug' && selectedServoId && !allRegistersData) {
+                loadAllRegisters();
+            }
+        }
 
         // API Functions
         async function api(endpoint, method = 'GET', body = null) {
@@ -1311,6 +1559,82 @@
             showToast(result.message, result.success ? 'success' : 'error');
         }
 
+        // PID Parameters
+        async function readPidParams() {
+            if (!selectedServoId) return;
+            const result = await api(`/servo/${selectedServoId}/registers`);
+            if (result.registers) {
+                const r = result.registers;
+                if (r.position_p_gain?.value != null) document.getElementById('pidP').value = r.position_p_gain.value;
+                if (r.position_i_gain?.value != null) document.getElementById('pidI').value = r.position_i_gain.value;
+                if (r.position_d_gain?.value != null) document.getElementById('pidD').value = r.position_d_gain.value;
+                showToast('PID params loaded', 'success');
+            }
+        }
+
+        async function writePidParams() {
+            if (!selectedServoId) return;
+            if (!confirm('⚠️ Writing to EPROM!\n\nThis will permanently change PID settings.\nContinue?')) return;
+            
+            const writes = [
+                api('/servo/register', 'POST', { servo_id: selectedServoId, addr: 21, size: 1, value: parseInt(document.getElementById('pidP').value), unlock_eeprom: true }),
+                api('/servo/register', 'POST', { servo_id: selectedServoId, addr: 23, size: 1, value: parseInt(document.getElementById('pidI').value), unlock_eeprom: true }),
+                api('/servo/register', 'POST', { servo_id: selectedServoId, addr: 22, size: 1, value: parseInt(document.getElementById('pidD').value), unlock_eeprom: true })
+            ];
+            await Promise.all(writes);
+            showToast('PID params saved to EPROM', 'success');
+        }
+
+        // Protection Parameters
+        async function readProtectionParams() {
+            if (!selectedServoId) return;
+            const result = await api(`/servo/${selectedServoId}/registers`);
+            if (result.registers) {
+                const r = result.registers;
+                if (r.max_temp_limit?.value != null) document.getElementById('protMaxTemp').value = r.max_temp_limit.value;
+                if (r.max_voltage?.value != null) document.getElementById('protMaxVolt').value = r.max_voltage.value;
+                if (r.min_voltage?.value != null) document.getElementById('protMinVolt').value = r.min_voltage.value;
+                showToast('Protection params loaded', 'success');
+            }
+        }
+
+        async function writeProtectionParams() {
+            if (!selectedServoId) return;
+            if (!confirm('⚠️ Writing to EPROM!\n\nThis will permanently change protection settings.\nContinue?')) return;
+            
+            const writes = [
+                api('/servo/register', 'POST', { servo_id: selectedServoId, addr: 13, size: 1, value: parseInt(document.getElementById('protMaxTemp').value), unlock_eeprom: true }),
+                api('/servo/register', 'POST', { servo_id: selectedServoId, addr: 14, size: 1, value: parseInt(document.getElementById('protMaxVolt').value), unlock_eeprom: true }),
+                api('/servo/register', 'POST', { servo_id: selectedServoId, addr: 15, size: 1, value: parseInt(document.getElementById('protMinVolt').value), unlock_eeprom: true })
+            ];
+            await Promise.all(writes);
+            showToast('Protection params saved to EPROM', 'success');
+        }
+
+        // Velocity PID Parameters
+        async function readVelocityPid() {
+            if (!selectedServoId) return;
+            const result = await api(`/servo/${selectedServoId}/registers`);
+            if (result.registers) {
+                const r = result.registers;
+                if (r.velocity_p_gain?.value != null) document.getElementById('velP').value = r.velocity_p_gain.value;
+                if (r.velocity_i_gain?.value != null) document.getElementById('velI').value = r.velocity_i_gain.value;
+                showToast('Velocity PID loaded', 'success');
+            }
+        }
+
+        async function writeVelocityPid() {
+            if (!selectedServoId) return;
+            if (!confirm('⚠️ Writing to EPROM!\n\nThis will permanently change velocity PID settings.\nContinue?')) return;
+            
+            const writes = [
+                api('/servo/register', 'POST', { servo_id: selectedServoId, addr: 37, size: 1, value: parseInt(document.getElementById('velP').value), unlock_eeprom: true }),
+                api('/servo/register', 'POST', { servo_id: selectedServoId, addr: 39, size: 1, value: parseInt(document.getElementById('velI').value), unlock_eeprom: true })
+            ];
+            await Promise.all(writes);
+            showToast('Velocity PID saved to EPROM', 'success');
+        }
+
         // Debug Register Table
         async function loadAllRegisters() {
             if (!selectedServoId) {
@@ -1322,7 +1646,11 @@
             const result = await api(`/servo/${selectedServoId}/registers`);
             
             if (result.registers) {
+                allRegistersData = result.registers; // Store for filtering
+                document.getElementById('registerFilter').value = 'all'; // Reset filter
                 renderRegisterTable(result.registers);
+                const count = Object.keys(result.registers).length;
+                document.getElementById('registerCount').textContent = `${count} registers`;
             }
         }
 
@@ -1336,10 +1664,23 @@
                 const isWritable = reg.rw === 'rw';
                 const displayValue = reg.value !== null ? reg.value : '—';
                 
+                // Build tooltip content
+                const desc = reg.desc || '';
+                const unit = reg.unit ? `Đơn vị: ${reg.unit}` : '';
+                const range = reg.range ? `Range: ${reg.range}` : '';
+                const defaultVal = reg.default ? `Default: ${reg.default}` : '';
+                const tooltip = [desc, unit, range, defaultVal].filter(x => x).join('\\n');
+                
                 return `
                     <tr>
                         <td class="addr">${reg.addr}</td>
-                        <td>${reg.name}</td>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                ${reg.name}
+                                ${desc ? `<span class="tooltip-icon" data-tooltip="${tooltip.replace(/"/g, '&quot;')}">?</span>` : ''}
+                            </div>
+                            ${reg.unit ? `<div class="register-info">${reg.unit}</div>` : ''}
+                        </td>
                         <td>
                             ${isWritable ? 
                                 `<input type="number" class="value-input" id="reg_${key}" value="${displayValue}" data-addr="${reg.addr}" data-size="${reg.size}" data-area="${reg.area}">` :
@@ -1359,6 +1700,8 @@
             }).join('');
         }
 
+        let allRegistersData = null; // Cache for filtering
+        
         async function writeRegister(key) {
             if (!selectedServoId) return;
             
@@ -1390,6 +1733,26 @@
             
             showToast(result.message, result.success ? 'success' : 'error');
         }
+        
+        function filterRegisters() {
+            if (!allRegistersData) return;
+            
+            const filter = document.getElementById('registerFilter').value;
+            let filtered = allRegistersData;
+            
+            if (filter !== 'all') {
+                filtered = {};
+                for (const [key, reg] of Object.entries(allRegistersData)) {
+                    if (reg.area === filter) {
+                        filtered[key] = reg;
+                    }
+                }
+            }
+            
+            renderRegisterTable(filtered);
+            const count = Object.keys(filtered).length;
+            document.getElementById('registerCount').textContent = `${count} registers`;
+        }
 
         // Toast Notifications
         function showToast(message, type = 'success') {
@@ -1405,6 +1768,50 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
+        // ============ LocalStorage for settings persistence ============
+        const STORAGE_KEY = 'servo_dashboard_settings';
+        
+        function loadSettings() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const settings = JSON.parse(saved);
+                    if (settings.port) document.getElementById('portInput').value = settings.port;
+                    if (settings.baudrate) document.getElementById('baudrateInput').value = settings.baudrate;
+                    if (settings.scanStart) document.getElementById('scanStart').value = settings.scanStart;
+                    if (settings.scanEnd) document.getElementById('scanEnd').value = settings.scanEnd;
+                    console.log('Settings loaded from cache:', settings);
+                }
+            } catch (e) {
+                console.warn('Failed to load settings:', e);
+            }
+        }
+        
+        function saveSettings() {
+            try {
+                const settings = {
+                    port: document.getElementById('portInput').value,
+                    baudrate: document.getElementById('baudrateInput').value,
+                    scanStart: document.getElementById('scanStart').value,
+                    scanEnd: document.getElementById('scanEnd').value,
+                    lastUpdated: new Date().toISOString()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+                console.log('Settings saved to cache');
+            } catch (e) {
+                console.warn('Failed to save settings:', e);
+            }
+        }
+        
+        // Auto-save settings when inputs change
+        document.getElementById('portInput').addEventListener('change', saveSettings);
+        document.getElementById('baudrateInput').addEventListener('change', saveSettings);
+        document.getElementById('scanStart').addEventListener('change', saveSettings);
+        document.getElementById('scanEnd').addEventListener('change', saveSettings);
+        
+        // Load settings on page load
+        loadSettings();
+        
         // Check initial status
         api('/status').then(status => {
             if (status.connected) {

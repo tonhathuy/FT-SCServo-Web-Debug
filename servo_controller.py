@@ -37,37 +37,293 @@ ADDR_SCS_VMAX = 84                 # Vmax (1 byte)
 ADDR_SCS_AMAX = 85                 # Amax - Max acceleration (1 byte)
 ADDR_SCS_KACC = 86                 # KAcc (1 byte)
 
-# Register definitions for UI
+# Register definitions for UI with descriptions - Complete list from FT SCServo Debug
 SERVO_REGISTERS = {
-    # EEPROM registers (need unlock)
-    'id': {'addr': 5, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Servo ID'},
-    'baud_rate': {'addr': 6, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Baud Rate'},
-    'min_angle': {'addr': 9, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Min Angle Limit'},
-    'max_angle': {'addr': 11, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Max Angle Limit'},
-    'overcurrent': {'addr': 38, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Overcurrent Protection'},
-    'velocity_i_gain': {'addr': 39, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Velocity I Gain'},
+    # ============ EPROM REGISTERS (persistent, need unlock to write) ============
+    'firmware_main': {
+        'addr': 0, 'size': 1, 'area': 'EPROM', 'rw': 'r', 'name': 'Firmware Main Version',
+        'desc': 'Main firmware version number (read-only).', 'unit': '', 'range': '0-255', 'default': '—'
+    },
+    'firmware_secondary': {
+        'addr': 1, 'size': 1, 'area': 'EPROM', 'rw': 'r', 'name': 'Firmware Secondary Version',
+        'desc': 'Secondary firmware version number (read-only).', 'unit': '', 'range': '0-255', 'default': '—'
+    },
+    'servo_main_ver': {
+        'addr': 3, 'size': 1, 'area': 'EPROM', 'rw': 'r', 'name': 'Servo Main Version',
+        'desc': 'Servo hardware main version (read-only).', 'unit': '', 'range': '0-255', 'default': '—'
+    },
+    'servo_sub_ver': {
+        'addr': 4, 'size': 1, 'area': 'EPROM', 'rw': 'r', 'name': 'Servo Sub Version',
+        'desc': 'Servo hardware sub version (read-only).', 'unit': '', 'range': '0-255', 'default': '—'
+    },
+    'id': {
+        'addr': 5, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'ID',
+        'desc': 'Unique servo ID (1-253). Each servo on the bus must have different ID.',
+        'unit': '', 'range': '1-253', 'default': '1'
+    },
+    'baud_rate': {
+        'addr': 6, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Baud Rate',
+        'desc': 'Serial speed. 0=1Mbps, 1=500K, 2=250K, 3=128K, 4=115200, 5=76800, 6=57600, 7=38400',
+        'unit': '', 'range': '0-7', 'default': '0'
+    },
+    'reserved': {
+        'addr': 7, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Reserved',
+        'desc': 'Reserved register.', 'unit': '', 'range': '0-255', 'default': '0'
+    },
+    'status_return_level': {
+        'addr': 8, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Status Return Level',
+        'desc': 'Response mode. 0=No response, 1=Respond to READ only, 2=Respond to all commands',
+        'unit': '', 'range': '0-2', 'default': '1'
+    },
+    'min_angle': {
+        'addr': 9, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Min Position Limit',
+        'desc': 'Minimum angle limit. Servo will not rotate past this position.',
+        'unit': 'steps', 'range': '0-4095', 'default': '0'
+    },
+    'max_angle': {
+        'addr': 11, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Max Position Limit',
+        'desc': 'Maximum angle limit. Servo will not rotate past this position.',
+        'unit': 'steps', 'range': '0-4095', 'default': '4095'
+    },
+    'max_temp_limit': {
+        'addr': 13, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Max Temperature Limit',
+        'desc': 'Maximum temperature limit. Servo disables when exceeded.',
+        'unit': '°C', 'range': '0-100', 'default': '70'
+    },
+    'max_voltage': {
+        'addr': 14, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Max Input Voltage',
+        'desc': 'Maximum input voltage limit. Value ÷10 = Volts.',
+        'unit': '×0.1V', 'range': '0-255', 'default': '140'
+    },
+    'min_voltage': {
+        'addr': 15, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Min Input Voltage',
+        'desc': 'Minimum input voltage limit. Value ÷10 = Volts.',
+        'unit': '×0.1V', 'range': '0-255', 'default': '40'
+    },
+    'max_torque': {
+        'addr': 16, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Max Torque Limit',
+        'desc': 'Maximum torque output limit. 1000=100%.',
+        'unit': '‰', 'range': '0-1000', 'default': '1000'
+    },
+    'setting_byte': {
+        'addr': 18, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Setting Byte',
+        'desc': 'Configuration flags. Bit0=Direction, Bit1=Mode, etc.',
+        'unit': '', 'range': '0-255', 'default': '12'
+    },
+    'protection_switch': {
+        'addr': 19, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Protection Switch',
+        'desc': 'Enable/disable various protection features (bitmask).',
+        'unit': '', 'range': '0-255', 'default': '44'
+    },
+    'led_alarm': {
+        'addr': 20, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'LED Alarm Condition',
+        'desc': 'LED alarm trigger conditions (bitmask).',
+        'unit': '', 'range': '0-255', 'default': '47'
+    },
+    'position_p_gain': {
+        'addr': 21, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Position P Gain',
+        'desc': 'Proportional gain (P) of position PID controller.',
+        'unit': '', 'range': '0-255', 'default': '32'
+    },
+    'position_d_gain': {
+        'addr': 22, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Position D Gain',
+        'desc': 'Derivative gain (D) of position PID controller.',
+        'unit': '', 'range': '0-255', 'default': '32'
+    },
+    'position_i_gain': {
+        'addr': 23, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Position I Gain',
+        'desc': 'Integral gain (I) of position PID controller.',
+        'unit': '', 'range': '0-255', 'default': '0'
+    },
+    'punch': {
+        'addr': 24, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Punch',
+        'desc': 'Minimum PWM value applied to motor. Helps overcome static friction.',
+        'unit': '', 'range': '0-1000', 'default': '16'
+    },
+    'max_i': {
+        'addr': 25, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'MAX I',
+        'desc': 'Maximum integral value for PID controller.',
+        'unit': '', 'range': '0-255', 'default': '0'
+    },
+    'cw_dead_band': {
+        'addr': 26, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'CW Dead Band',
+        'desc': 'Clockwise dead band. Position error within this range is ignored.',
+        'unit': 'steps', 'range': '0-255', 'default': '1'
+    },
+    'ccw_dead_band': {
+        'addr': 27, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'CCW Dead Band',
+        'desc': 'Counter-clockwise dead band. Position error within this range is ignored.',
+        'unit': 'steps', 'range': '0-255', 'default': '1'
+    },
+    'overload_current': {
+        'addr': 28, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Overload Current',
+        'desc': 'Overload current threshold for protection.',
+        'unit': 'mA', 'range': '0-1000', 'default': '310'
+    },
+    'angular_resolution': {
+        'addr': 30, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Angular Resolution',
+        'desc': 'Position resolution multiplier.',
+        'unit': '', 'range': '0-255', 'default': '1'
+    },
+    'position_offset': {
+        'addr': 31, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Position Offset Value',
+        'desc': 'Position offset for calibration. Added to actual position.',
+        'unit': 'steps', 'range': '-2048 to 2047', 'default': '0'
+    },
+    'work_mode': {
+        'addr': 33, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Work Mode',
+        'desc': 'Operating mode. 0=Position servo, 1=Wheel mode, 2=PWM mode, 3=Step mode',
+        'unit': '', 'range': '0-3', 'default': '0'
+    },
+    'protect_torque': {
+        'addr': 34, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Protect Torque',
+        'desc': 'Torque level when protection is triggered.',
+        'unit': '%', 'range': '0-100', 'default': '20'
+    },
+    'overload_protection_time': {
+        'addr': 35, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Overload Protection Time',
+        'desc': 'Time before overload protection triggers.',
+        'unit': '×20ms', 'range': '0-255', 'default': '200'
+    },
+    'overload_torque': {
+        'addr': 36, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Overload Torque',
+        'desc': 'Torque threshold for overload detection.',
+        'unit': '%', 'range': '0-100', 'default': '80'
+    },
+    'velocity_p_gain': {
+        'addr': 37, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Velocity P Gain',
+        'desc': 'Proportional gain (P) of velocity PID controller.',
+        'unit': '', 'range': '0-255', 'default': '10'
+    },
+    'overcurrent': {
+        'addr': 38, 'size': 2, 'area': 'EPROM', 'rw': 'rw', 'name': 'Overcurrent Protection',
+        'desc': 'Overcurrent protection threshold.',
+        'unit': 'mA', 'range': '0-1000', 'default': '200'
+    },
+    'velocity_i_gain': {
+        'addr': 39, 'size': 1, 'area': 'EPROM', 'rw': 'rw', 'name': 'Velocity I Gain',
+        'desc': 'Integral gain (I) of velocity PID controller.',
+        'unit': '', 'range': '0-255', 'default': '200'
+    },
     
-    # SRAM registers
-    'torque_enable': {'addr': 40, 'size': 1, 'area': 'SRAM', 'rw': 'rw', 'name': 'Torque Enable'},
-    'goal_acceleration': {'addr': 41, 'size': 1, 'area': 'SRAM', 'rw': 'rw', 'name': 'Goal Acceleration'},
-    'goal_position': {'addr': 42, 'size': 2, 'area': 'SRAM', 'rw': 'rw', 'name': 'Goal Position'},
-    'goal_speed': {'addr': 46, 'size': 2, 'area': 'SRAM', 'rw': 'rw', 'name': 'Goal Speed'},
-    'torque_limit': {'addr': 48, 'size': 2, 'area': 'SRAM', 'rw': 'rw', 'name': 'Torque Limit'},
-    'lock': {'addr': 55, 'size': 1, 'area': 'SRAM', 'rw': 'rw', 'name': 'EEPROM Lock'},
-    'present_position': {'addr': 56, 'size': 2, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Position'},
-    'present_speed': {'addr': 58, 'size': 2, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Speed'},
-    'present_load': {'addr': 60, 'size': 2, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Load'},
-    'present_voltage': {'addr': 62, 'size': 1, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Voltage'},
-    'present_temp': {'addr': 63, 'size': 1, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Temperature'},
+    # ============ SRAM REGISTERS (volatile, reset on power cycle) ============
+    'torque_enable': {
+        'addr': 40, 'size': 1, 'area': 'SRAM', 'rw': 'rw', 'name': 'Torque Enable',
+        'desc': 'Enable/disable torque. 0=Off (free), 1=On (hold position)',
+        'unit': '', 'range': '0-1', 'default': '0'
+    },
+    'goal_acceleration': {
+        'addr': 41, 'size': 1, 'area': 'SRAM', 'rw': 'rw', 'name': 'Goal Acceleration',
+        'desc': 'Target acceleration. 0=No limit, higher=faster acceleration.',
+        'unit': '', 'range': '0-255', 'default': '0'
+    },
+    'goal_position': {
+        'addr': 42, 'size': 2, 'area': 'SRAM', 'rw': 'rw', 'name': 'Goal Position',
+        'desc': 'Target position for servo to move to.',
+        'unit': 'steps', 'range': '0-4095', 'default': '—'
+    },
+    'goal_pwm': {
+        'addr': 44, 'size': 2, 'area': 'SRAM', 'rw': 'rw', 'name': 'Goal PWM',
+        'desc': 'Target PWM value (for PWM mode).',
+        'unit': '', 'range': '-1000 to 1000', 'default': '0'
+    },
+    'goal_speed': {
+        'addr': 46, 'size': 2, 'area': 'SRAM', 'rw': 'rw', 'name': 'Goal Velocity',
+        'desc': 'Target velocity or time to reach position.',
+        'unit': 'steps/s or ms', 'range': '0-65535', 'default': '0'
+    },
+    'torque_limit': {
+        'addr': 48, 'size': 2, 'area': 'SRAM', 'rw': 'rw', 'name': 'Torque Limit',
+        'desc': 'Runtime torque limit. 1000=100%.',
+        'unit': '‰', 'range': '0-1000', 'default': '1000'
+    },
+    'lock': {
+        'addr': 55, 'size': 1, 'area': 'SRAM', 'rw': 'rw', 'name': 'Lock',
+        'desc': 'EEPROM lock. 0=Unlocked (allow write), 1=Locked (protect)',
+        'unit': '', 'range': '0-1', 'default': '1'
+    },
+    'present_position': {
+        'addr': 56, 'size': 2, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Position',
+        'desc': 'Current servo position.',
+        'unit': 'steps', 'range': '0-4095', 'default': '—'
+    },
+    'present_speed': {
+        'addr': 58, 'size': 2, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Velocity',
+        'desc': 'Current servo velocity. Negative=reverse.',
+        'unit': 'steps/s', 'range': '±32767', 'default': '—'
+    },
+    'present_pwm': {
+        'addr': 60, 'size': 2, 'area': 'SRAM', 'rw': 'r', 'name': 'Present PWM',
+        'desc': 'Current PWM output value.',
+        'unit': '', 'range': '±1000', 'default': '—'
+    },
+    'present_voltage': {
+        'addr': 62, 'size': 1, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Input Voltage',
+        'desc': 'Current input voltage. Value ÷10 = Volts.',
+        'unit': '×0.1V', 'range': '0-255', 'default': '—'
+    },
+    'present_temp': {
+        'addr': 63, 'size': 1, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Temperature',
+        'desc': 'Current temperature.',
+        'unit': '°C', 'range': '0-100', 'default': '—'
+    },
+    'sync_write_flag': {
+        'addr': 64, 'size': 1, 'area': 'SRAM', 'rw': 'r', 'name': 'Sync Write Flag',
+        'desc': 'Indicates if sync write command was received.',
+        'unit': '', 'range': '0-1', 'default': '—'
+    },
+    'hardware_error': {
+        'addr': 65, 'size': 1, 'area': 'SRAM', 'rw': 'r', 'name': 'Hardware Error Status',
+        'desc': 'Hardware error flags (bitmask).',
+        'unit': '', 'range': '0-255', 'default': '—'
+    },
+    'moving_status': {
+        'addr': 66, 'size': 1, 'area': 'SRAM', 'rw': 'r', 'name': 'Moving Status',
+        'desc': '0=Stopped, 1=Moving to goal position.',
+        'unit': '', 'range': '0-1', 'default': '—'
+    },
+    'present_current': {
+        'addr': 69, 'size': 2, 'area': 'SRAM', 'rw': 'r', 'name': 'Present Current',
+        'desc': 'Current draw.',
+        'unit': 'mA', 'range': '0-65535', 'default': '—'
+    },
     
-    # Motion profile (DEFAULT area)
-    'moving_threshold': {'addr': 80, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Moving Threshold'},
-    'dts': {'addr': 81, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'DTs (ms)'},
-    'vk': {'addr': 82, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Vk (ms)'},
-    'vmin': {'addr': 83, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Vmin'},
-    'vmax': {'addr': 84, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Vmax'},
-    'amax': {'addr': 85, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Amax'},
-    'kacc': {'addr': 86, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'KAcc'},
+    # ============ DEFAULT REGISTERS (motion profile parameters) ============
+    'moving_threshold': {
+        'addr': 80, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Moving Threshold',
+        'desc': 'Threshold to detect if servo is moving.',
+        'unit': '', 'range': '0-255', 'default': '1'
+    },
+    'dts': {
+        'addr': 81, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'DTs(ms)',
+        'desc': 'Dead time before movement. Smooths direction changes.',
+        'unit': 'ms', 'range': '0-255', 'default': '20'
+    },
+    'vk': {
+        'addr': 82, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Vk(ms)',
+        'desc': 'Velocity constant. Affects velocity curve smoothness.',
+        'unit': 'ms', 'range': '0-255', 'default': '50'
+    },
+    'vmin': {
+        'addr': 83, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Vmin',
+        'desc': 'Minimum velocity. Servo wont move slower than this.',
+        'unit': 'steps/s', 'range': '0-255', 'default': '1'
+    },
+    'vmax': {
+        'addr': 84, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Vmax',
+        'desc': 'Maximum velocity. Servo wont move faster than this.',
+        'unit': 'steps/s ×50', 'range': '0-255', 'default': '65'
+    },
+    'amax': {
+        'addr': 85, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'Amax',
+        'desc': 'Maximum acceleration. High=sharp, Low=smooth motion.',
+        'unit': '', 'range': '0-254', 'default': '50'
+    },
+    'kacc': {
+        'addr': 86, 'size': 1, 'area': 'DEFAULT', 'rw': 'rw', 'name': 'KAcc',
+        'desc': 'Acceleration coefficient. Multiplied with Amax.',
+        'unit': '', 'range': '0-255', 'default': '1'
+    },
 }
 
 
@@ -432,7 +688,11 @@ class ServoController:
                 'value': value,
                 'area': reg['area'],
                 'rw': reg['rw'],
-                'size': reg['size']
+                'size': reg['size'],
+                'desc': reg.get('desc', ''),
+                'unit': reg.get('unit', ''),
+                'range': reg.get('range', ''),
+                'default': reg.get('default', '')
             }
         
         return result
